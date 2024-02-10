@@ -46,8 +46,8 @@ func main() {
 	modelTranslate["FC330"] = "DJI-Phantom4"
 	modelTranslate["HG310Z"] = "DJI-OsmoPlus"
 
-	serialTranslate := make(map[string]string)
-	serialTranslate[" "] = ""
+	spaceTranslate := make(map[string]string)
+	spaceTranslate[" "] = ""
 
 	supportedMIMETypes = append(supportedMIMETypes, "image", "video")
 
@@ -111,8 +111,6 @@ func main() {
 	// "2006-01-02T15:04:05.999999999Z07:00"
 	dateFormat := "%s%-3f"
 
-	// TODO: Exiftool will return an exit code of 1 along with good output if individual files are
-	// corrupt or unreadable. Something to ponder.
 	cmd := exec.Command(exiftoolbin, "-r", "-json", "-dateFormat", dateFormat, workDir)
 	log.Infof("running exiftool command: %s", cmd.String())
 	output, err := cmd.Output()
@@ -224,16 +222,17 @@ SOURCEFILE:
 			model = v.Get("AndroidModel").String()
 		}
 
+		model = strmanip.Strtr(model, spaceTranslate)
 		model = strmanip.Strtr(model, modelTranslate)
 
 		if v.Get("SerialNumber").Exists() {
 			cameraSerial = v.Get("SerialNumber").String()
-			cameraSerial = strmanip.Strtr(cameraSerial, serialTranslate)
+			cameraSerial = strmanip.Strtr(cameraSerial, spaceTranslate)
 		}
 
 		if v.Get("LensSerialNumber").Exists() {
 			lensSerial = v.Get("LensSerialNumber").String()
-			lensSerial = strmanip.Strtr(lensSerial, modelTranslate)
+			lensSerial = strmanip.Strtr(lensSerial, spaceTranslate)
 		}
 
 		fileLogger.Debugf("model: %s", model)
