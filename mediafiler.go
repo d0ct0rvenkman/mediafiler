@@ -26,6 +26,10 @@ import (
 	"github.com/tidwall/gjson"
 )
 
+const (
+	dirSep string = "/" // TODO: find a way to determine this programmatically
+)
+
 var log = logrus.New()
 
 func main() {
@@ -34,8 +38,7 @@ func main() {
 	var merr error
 	var err error
 	var supportedMIMETypes []string
-
-	directorySep := "/"
+	var pathIgnoreSubstrings []string
 
 	// TODO: make these configurable, not hardcoded
 	modelTranslate := make(map[string]string)
@@ -47,6 +50,10 @@ func main() {
 
 	spaceTranslate := make(map[string]string)
 	spaceTranslate[" "] = ""
+
+	// TODO: make ignore patterns not hardcoded
+	// TODO: make ignore patterns regex-capable
+	pathIgnoreSubstrings = append(pathIgnoreSubstrings, "/.sync/")
 
 	supportedMIMETypes = append(supportedMIMETypes, "image", "video")
 
@@ -132,7 +139,7 @@ SOURCEFILE:
 		sourceFile := v.Get("SourceFile").String()
 
 		fileLogger := log.WithFields(logrus.Fields{
-			"sourceFile": strings.Replace(sourceFile, workDir, "./", 1),
+			"sourceFile": strings.Replace(sourceFile, workDir, "."+dirSep, 1),
 			"fileIndex":  k + 1,
 			"fileCount":  fileCount,
 			"indent":     "  ",
@@ -153,6 +160,14 @@ SOURCEFILE:
 		mimeSubType := ""
 		newPathSuffix := ""
 		fileExtension := ""
+
+		// ignore files from filtered paths
+		for _, substr := range pathIgnoreSubstrings {
+			if strings.Contains(sourceFile, substr) {
+				fileLogger.Warnf("sourceFile matches an ignore path substring ('%s'). skipping", substr)
+				continue SOURCEFILE
+			}
+		}
 
 		sourceFileInfo, err := os.Stat(sourceFile)
 		if err != nil {
@@ -249,8 +264,8 @@ SOURCEFILE:
 		fileLogger.Debugf("fileExtension: %s", fileExtension)
 
 		// TODO: make this something that can be made into a template
-		newPathSuffix = fmt.Sprintf("%s/%s/%04d/%02d",
-			mimeType, mimeSubType, timeObj.UTC().Year(), timeObj.UTC().Month())
+		newPathSuffix = fmt.Sprintf("%s%s%s%s%04d%s%02d",
+			mimeType, dirSep, mimeSubType, dirSep, timeObj.UTC().Year(), dirSep, timeObj.UTC().Month())
 
 		newFileName := fmt.Sprintf("%04d%02d%02dT%02d%02d%02d.%03dZ-%s",
 			timeObj.UTC().Year(),
@@ -276,7 +291,7 @@ SOURCEFILE:
 		fileLogger.Debugf("newFileName: %s", newFileName)
 
 		// we've got the stuff we need to rename the file, now lets see if the destination file already exists.
-		destFile := fmt.Sprintf("%s/%s/%s.%s", destRootDir, newPathSuffix, newFileName, fileExtension)
+		destFile := fmt.Sprintf("%s%s%s%s%s.%s", destRootDir, dirSep, newPathSuffix, dirSep, newFileName, fileExtension)
 		suffixIndex := 0
 		pathAvailable, pathInfo, pathErr := paths.IsPathAvailable(destFile)
 		if !pathAvailable {
@@ -328,13 +343,13 @@ SOURCEFILE:
 			}
 
 			suffixIndex++
-			destFile = fmt.Sprintf("%s/%s/%s-%03d.%s", destRootDir, newPathSuffix, newFileName, suffixIndex, fileExtension)
+			destFile = fmt.Sprintf("%s%s%s%s%s-%03d.%s", destRootDir, dirSep, newPathSuffix, dirSep, newFileName, suffixIndex, fileExtension)
 			pathAvailable, pathInfo, pathErr = paths.IsPathAvailable(destFile)
 		}
 
 		fileLogger.Debugf("destination file: %s", destFile)
 
-		targetDir := destRootDir + directorySep + newPathSuffix
+		targetDir := destRootDir + dirSep + newPathSuffix
 		fileLogger.Debugf("creating target directory: %s", targetDir)
 		err = os.MkdirAll(targetDir, 0755)
 		if err != nil {
