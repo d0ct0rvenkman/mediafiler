@@ -125,6 +125,11 @@ func main() {
 		log.Warnf("exiftool reported an error. %s", err)
 	}
 
+	if len(output) == 0 {
+		log.Info("exiftool output was empty. exiting.")
+		os.Exit(0)
+	}
+
 	if !gjson.ValidBytes(output) {
 		log.Fatalf("failed to unmarshal JSON output from exiftool. reason: %s", err)
 	}
