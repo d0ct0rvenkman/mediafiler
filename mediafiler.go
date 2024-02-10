@@ -50,8 +50,9 @@ func main() {
 
 	supportedMIMETypes = append(supportedMIMETypes, "image", "video")
 
+	// TODO: make log level configurable
 	log.SetFormatter(new(logfmt.NonDebugFormatter))
-	log.SetLevel(logrus.DebugLevel)
+	log.SetLevel(logrus.InfoLevel)
 
 	log.Infof("I AM %s PLEASE INSERT MEDIA", os.Args[0])
 	for k, v := range os.Args {
