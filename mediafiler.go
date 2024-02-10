@@ -47,6 +47,9 @@ func main() {
 	modelTranslate["CanonPowerShot"] = "CPS_"
 	modelTranslate["Canon EOS DIGITAL REBEL XS"] = "Canon1000D"
 	modelTranslate["CanonEOSDIGITALREBELXS"] = "Canon1000D"
+	modelTranslate["Canon EOS DIGITAL REBEL"] = "Canon300D"
+	modelTranslate["CanonEOSDIGITALREBEL"] = "Canon300D"
+
 	modelTranslate["motorola DROID3"] = "Droid3"
 	modelTranslate["motorolaDROID3"] = "Droid3"
 
