@@ -44,6 +44,7 @@ func main() {
 	modelTranslate := make(map[string]string)
 	modelTranslate["Canon PowerShot"] = "CPS_"
 	modelTranslate["CanonPowerShot"] = "CPS_"
+	modelTranslate["EOS REBEL"] = ""
 	modelTranslate["EOSREBEL"] = ""
 	modelTranslate["motorola DROID3"] = "Droid3"
 	modelTranslate["motorolaDROID3"] = "Droid3"
