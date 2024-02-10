@@ -44,10 +44,9 @@ func main() {
 	modelTranslate := make(map[string]string)
 	modelTranslate["Canon PowerShot"] = "CPS_"
 	modelTranslate["CanonPowerShot"] = "CPS_"
-	modelTranslate["EOS REBEL"] = ""
-	modelTranslate["EOSREBEL"] = ""
-	modelTranslate["EOS Rebel"] = ""
-	modelTranslate["EOSRebel"] = ""
+	modelTranslate["EOS"] = ""
+	modelTranslate["REBEL"] = ""
+	modelTranslate["Rebel"] = ""
 	modelTranslate["motorola DROID3"] = "Droid3"
 	modelTranslate["motorolaDROID3"] = "Droid3"
 	modelTranslate["FC300S"] = "DJI-Phantom3Adv"
