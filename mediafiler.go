@@ -369,7 +369,7 @@ SOURCEFILE:
 		if err != nil {
 			fileLogger.WithFields(logrus.Fields{"verb": "error:"}).Errorf("could not rename file! reason: %s", err)
 		} else {
-			fileLogger.WithFields(logrus.Fields{"verb": "renamed:"}).Infof("renamed: %s", destFile)
+			fileLogger.WithFields(logrus.Fields{"verb": "renamed:"}).Infof(">> %s", destFile)
 		}
 
 	} // ends: for k, v := range result.Array()
