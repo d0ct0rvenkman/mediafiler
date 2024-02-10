@@ -20,16 +20,16 @@ type NonDebugFormatter struct {
 func (f *NonDebugFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 	// HH:MM:SS L xxx msg
 	// L: one letter log level
-	// xxx: "indent" field from event to pad pretty-printed messages
-	indent := ""
+	// xxx: "verb" field from event to pad pretty-printed messages
+	verb := ""
 
 	data := make(logrus.Fields)
 	for k, v := range entry.Data {
 		data[k] = v
 	}
 
-	if field, ok := data["indent"]; ok {
-		indent = field.(string)
+	if field, ok := data["verb"]; ok {
+		verb = field.(string)
 	}
 
 	var levelColor int
@@ -46,12 +46,13 @@ func (f *NonDebugFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 		levelColor = gray
 	}
 
-	lineString := fmt.Sprintf("%02d:%02d:%02d %s :: %s",
+	lineString := fmt.Sprintf("%02d:%02d:%02d %s :: %12s %s",
 		entry.Time.Hour(),
 		entry.Time.Minute(),
 		entry.Time.Second(),
 		strings.ToUpper(string(entry.Level.String()[0])),
-		indent+entry.Message,
+		verb,
+		entry.Message,
 	)
 
 	lineBytes := []byte(fmt.Sprintf("\x1b[%dm%s\x1b[0m", levelColor, lineString))

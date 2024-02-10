@@ -61,9 +61,11 @@ func main() {
 	log.SetFormatter(new(logfmt.NonDebugFormatter))
 	log.SetLevel(logrus.InfoLevel)
 
-	log.Infof("I AM %s PLEASE INSERT MEDIA", os.Args[0])
+	startLog := log.WithFields(logrus.Fields{"verb": "startup:"})
+
+	startLog.Infof("I AM %s PLEASE INSERT MEDIA", os.Args[0])
 	for k, v := range os.Args {
-		log.Tracef("arg[%d]: '%s'", k, v)
+		startLog.Tracef("arg[%d]: '%s'", k, v)
 	}
 
 	merr = nil
@@ -74,10 +76,10 @@ func main() {
 	exiftoolbin := which.Which("exiftool")
 	if exiftoolbin == "" {
 		err = errors.New("exiftool binary was not found")
-		log.Debug((err))
+		startLog.Debug((err))
 		merr = multierr.Append(merr, err)
 	} else {
-		log.Infof("exiftool found at: %s", exiftoolbin)
+		startLog.Infof("exiftool found at: %s", exiftoolbin)
 	}
 
 	// determine what paths we're working with
@@ -85,12 +87,12 @@ func main() {
 	if err != nil {
 		merr = multierr.Append(merr, err)
 		err = fmt.Errorf("error determining paths. %s", err)
-		log.Debug(err)
+		startLog.Debug(err)
 
 	}
 
 	if merr != nil {
-		log.Fatalf("basic requirements not satisfied. %s", merr)
+		startLog.Fatalf("basic requirements not satisfied. %s", merr)
 	}
 
 	merr = nil
@@ -110,34 +112,34 @@ func main() {
 	}
 
 	if merr != nil {
-		log.Fatalf("paths provided are not usable. %s", merr)
+		startLog.Fatalf("paths provided are not usable. %s", merr)
 	}
 
-	log.Info("pre-flight checks passed.")
+	startLog.Info("pre-flight checks passed.")
 
 	// "2006-01-02T15:04:05.999999999Z07:00"
 	dateFormat := "%s%-3f"
 
 	cmd := exec.Command(exiftoolbin, "-r", "-json", "-dateFormat", dateFormat, workDir)
-	log.Infof("running exiftool command: %s", cmd.String())
+	startLog.Infof("running exiftool command: %s", cmd.String())
 	output, err := cmd.Output()
 	if err != nil {
-		log.Warnf("exiftool reported an error. %s", err)
+		startLog.Warnf("exiftool reported an error. %s", err)
 	}
 
 	if len(output) == 0 {
-		log.Info("exiftool output was empty. exiting.")
+		startLog.Info("exiftool output was empty. exiting.")
 		os.Exit(0)
 	}
 
 	if !gjson.ValidBytes(output) {
-		log.Fatalf("failed to unmarshal JSON output from exiftool. reason: %s", err)
+		startLog.Fatalf("failed to unmarshal JSON output from exiftool. reason: %s", err)
 	}
 
 	result := gjson.ParseBytes(output)
 
 	fileCount := len(result.Array())
-	log.Infof("Found %d files to process", fileCount)
+	startLog.Infof("Found %d files to process", fileCount)
 
 SOURCEFILE:
 	for k, v := range result.Array() {
@@ -147,10 +149,10 @@ SOURCEFILE:
 			"sourceFile": strings.Replace(sourceFile, workDir, "."+dirSep, 1),
 			"fileIndex":  k + 1,
 			"fileCount":  fileCount,
-			"indent":     "  ",
+			"verb":       "  ",
 		})
 
-		log.Infof("Processing %s (%d of %d)", sourceFile, k+1, fileCount)
+		log.WithFields(logrus.Fields{"verb": "processing:"}).Infof("%s (%d of %d)", sourceFile, k+1, fileCount)
 		var timeObj time.Time
 		var timeInput int64
 		var timestampFound bool
@@ -169,21 +171,21 @@ SOURCEFILE:
 		// ignore files from filtered paths
 		for _, substr := range pathIgnoreSubstrings {
 			if strings.Contains(sourceFile, substr) {
-				fileLogger.Warnf("sourceFile matches an ignore path substring ('%s'). skipping", substr)
+				fileLogger.WithFields(logrus.Fields{"verb": "skip:"}).Warnf("sourceFile matches an ignore path substring ('%s')", substr)
 				continue SOURCEFILE
 			}
 		}
 
 		sourceFileInfo, err := os.Stat(sourceFile)
 		if err != nil {
-			fileLogger.Error("could not Stat source file. interesting. skipping file.")
+			fileLogger.WithFields(logrus.Fields{"verb": "skip:"}).Error("could not Stat source file. interesting.")
 			continue SOURCEFILE
 		}
 
 		if v.Get("FileTypeExtension").Exists() {
 			fileExtension = strings.ToLower(v.Get("FileTypeExtension").String())
 		} else {
-			fileLogger.Infof("File doesn't have an extension? That's weird. Skipping.")
+			fileLogger.WithFields(logrus.Fields{"verb": "skip:"}).Infof("File doesn't have an extension? That's weird.")
 			continue SOURCEFILE
 		}
 
@@ -192,21 +194,21 @@ SOURCEFILE:
 			ok := false
 			mimeType, mimeSubType, ok = strings.Cut(v.Get("MIMEType").String(), "/")
 			if !ok {
-				fileLogger.Infof("MIMEType string '%s' could not be cut. skipping file.", v.Get("MIMEType").String())
+				fileLogger.WithFields(logrus.Fields{"verb": "skip:"}).Infof("MIMEType string '%s' could not be cut.", v.Get("MIMEType").String())
 				continue SOURCEFILE
 			}
 
 			if mimeType == "" || mimeSubType == "" {
-				fileLogger.Infof("MIME Type ('%s') or Subtype ('%s') cannot be empty. skipping file.", mimeType, mimeSubType)
+				fileLogger.WithFields(logrus.Fields{"verb": "skip:"}).Infof("MIME Type ('%s') or Subtype ('%s') cannot be empty", mimeType, mimeSubType)
 				continue SOURCEFILE
 			}
 		} else {
-			fileLogger.Info("MIME type for this file was not found. skipping this file.")
+			fileLogger.WithFields(logrus.Fields{"verb": "skip:"}).Info("MIME type for this file was not found.")
 			continue SOURCEFILE
 		}
 
 		if !slices.Contains(supportedMIMETypes, mimeType) {
-			fileLogger.Infof("The MIME type ('%s') for this file is not supported. skipping!", mimeType)
+			fileLogger.WithFields(logrus.Fields{"verb": "skip:"}).Infof("The MIME type ('%s') for this file is not supported", mimeType)
 			continue SOURCEFILE
 		}
 
@@ -237,7 +239,7 @@ SOURCEFILE:
 		}
 
 		if !timestampFound {
-			fileLogger.Info("we did not find a timestamp. skipping this file.")
+			fileLogger.WithFields(logrus.Fields{"verb": "skip:"}).Info("we did not find a timestamp")
 			continue SOURCEFILE
 		}
 
@@ -304,7 +306,7 @@ SOURCEFILE:
 			fileLogger.Debug("initial destFile isn't available")
 			sourceSum, serr = checksum.SHA256sum(sourceFile)
 			if serr != nil {
-				fileLogger.Error("couldn't checksum the source File. skipping it.")
+				fileLogger.WithFields(logrus.Fields{"verb": "skip:"}).Error("couldn't checksum the source file.")
 				continue SOURCEFILE
 			}
 		}
@@ -314,7 +316,7 @@ SOURCEFILE:
 			testLogger := fileLogger.WithFields(logrus.Fields{
 				"destFile":    destFile,
 				"suffixIndex": suffixIndex,
-				"indent":      "    ",
+				"verb":        "    ",
 			})
 
 			// path isn't available, lets figure out if we should try again with an updated suffix
@@ -323,7 +325,7 @@ SOURCEFILE:
 				// see if the file is a duplicate. if not, try a new path.
 
 				if os.SameFile(sourceFileInfo, pathInfo) {
-					testLogger.Warn("the OS says that sourceFile and destFile are the same file. skipping to next file")
+					testLogger.WithFields(logrus.Fields{"verb": "skip:"}).Warn("the OS says that sourceFile and destFile are the same file")
 					continue SOURCEFILE
 				}
 
@@ -333,7 +335,7 @@ SOURCEFILE:
 					testLogger.Warn("couldn't checksum the File at destFile. try another destFile")
 					continue TESTPATH
 				} else if sourceFileInfo.Size() == pathInfo.Size() && sourceSum == destSum {
-					testLogger.Info("sourceFile and destFile have the same size and sha256 sums. skipping as a duplicate")
+					testLogger.WithFields(logrus.Fields{"verb": "duplicate:"}).Info("sourceFile and destFile have the same size and sha256 sums")
 					continue SOURCEFILE
 				} else {
 					testLogger.Debug("doesn't look like a duplicate. try another destFile")
@@ -363,9 +365,9 @@ SOURCEFILE:
 
 		err = os.Rename(sourceFile, destFile)
 		if err != nil {
-			fileLogger.Errorf("could not rename file! reason: %s", err)
+			fileLogger.WithFields(logrus.Fields{"verb": "error:"}).Errorf("could not rename file! reason: %s", err)
 		} else {
-			fileLogger.Infof("renamed: %s", destFile)
+			fileLogger.WithFields(logrus.Fields{"verb": "renamed:"}).Infof("renamed: %s", destFile)
 		}
 
 	} // ends: for k, v := range result.Array()
