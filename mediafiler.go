@@ -207,6 +207,12 @@ SOURCEFILE:
 			fileLogger.Debugf("timeInput ('%d') pulled from 'CreateDate'", timeInput)
 			timeObj = time.UnixMilli(timeInput)
 			timestampFound = true
+
+		case v.Get("ModifyDate").Exists(): // damnit, DROID3!
+			timeInput, _ = strconv.ParseInt(v.Get("ModifyDate").String(), 10, 64)
+			fileLogger.Debugf("timeInput ('%d') pulled from 'ModifyDate'", timeInput)
+			timeObj = time.UnixMilli(timeInput)
+			timestampFound = true
 		}
 
 		if !timestampFound {
