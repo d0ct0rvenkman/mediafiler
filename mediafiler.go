@@ -39,7 +39,6 @@ func main() {
 
 	// TODO: make these configurable, not hardcoded
 	modelTranslate := make(map[string]string)
-	modelTranslate[" "] = ""
 	modelTranslate["Canon PowerShot SD600"] = "CPSSD600"
 	modelTranslate["motorola DROID3"] = "Droid3"
 	modelTranslate["FC300S"] = "DJI-Phantom3Adv"
@@ -222,8 +221,8 @@ SOURCEFILE:
 			model = v.Get("AndroidModel").String()
 		}
 
-		model = strmanip.Strtr(model, spaceTranslate)
 		model = strmanip.Strtr(model, modelTranslate)
+		model = strmanip.Strtr(model, spaceTranslate)
 
 		if v.Get("SerialNumber").Exists() {
 			cameraSerial = v.Get("SerialNumber").String()
