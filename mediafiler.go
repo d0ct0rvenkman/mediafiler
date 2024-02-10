@@ -183,7 +183,7 @@ SOURCEFILE:
 		if v.Get("FileTypeExtension").Exists() {
 			fileExtension = strings.ToLower(v.Get("FileTypeExtension").String())
 		} else {
-			fileLogger.Debug("File doesn't have an extension? That's weird. Skipping.")
+			fileLogger.Infof("File doesn't have an extension? That's weird. Skipping.")
 			continue SOURCEFILE
 		}
 
