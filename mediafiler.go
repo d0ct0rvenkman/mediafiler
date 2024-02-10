@@ -42,8 +42,8 @@ func main() {
 
 	// TODO: make these configurable, not hardcoded
 	modelTranslate := make(map[string]string)
-	modelTranslate["Canon PowerShot"] = "CPS-"
-	modelTranslate["CanonPowerShot"] = "CPS-"
+	modelTranslate["Canon PowerShot"] = "CPS_"
+	modelTranslate["CanonPowerShot"] = "CPS_"
 	modelTranslate["motorola DROID3"] = "Droid3"
 	modelTranslate["motorolaDROID3"] = "Droid3"
 	modelTranslate["FC300S"] = "DJI-Phantom3Adv"
