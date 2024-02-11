@@ -317,11 +317,7 @@ SOURCEFILE:
 		if !pathAvailable {
 			// grab some characteristics about the source file. only need to do it once.
 			fileLogger.Debug("initial destFile isn't available")
-			sourceSum, serr = checksum.SHA256sum(sourceFile)
-			if serr != nil {
-				fileLogger.WithFields(logrus.Fields{"verb": "skip:"}).Error("couldn't checksum the source file.")
-				continue SOURCEFILE
-			}
+
 		}
 
 	TESTPATH:
@@ -340,6 +336,14 @@ SOURCEFILE:
 				if os.SameFile(sourceFileInfo, pathInfo) {
 					testLogger.WithFields(logrus.Fields{"verb": "skip:"}).Warn("the OS says that sourceFile and destFile are the same file")
 					continue SOURCEFILE
+				}
+
+				if suffixIndex == 0 {
+					sourceSum, serr = checksum.SHA256sum(sourceFile)
+					if serr != nil {
+						fileLogger.WithFields(logrus.Fields{"verb": "skip:"}).Error("couldn't checksum the source file.")
+						continue SOURCEFILE
+					}
 				}
 
 				destSum, derr := checksum.SHA256sum(destFile)
