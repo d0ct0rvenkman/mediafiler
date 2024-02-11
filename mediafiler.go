@@ -42,24 +42,23 @@ func main() {
 
 	// TODO: make these configurable, not hardcoded
 	// TODO: add ordering so two maps aren't necessary
+	modelReplace := make(map[string]string)
+	modelReplace["Canon EOS DIGITAL REBEL XS"] = "Canon1000D"
+	modelReplace["Canon EOS DIGITAL REBEL"] = "Canon300D"
+	modelReplace["motorola DROID3"] = "Droid3"
+
 	modelTranslate := make(map[string]string)
-	modelTranslate["Canon PowerShot"] = "CPS_"
-	modelTranslate["CanonPowerShot"] = "CPS_"
-	modelTranslate["Canon EOS DIGITAL REBEL XS"] = "Canon1000D"
 	modelTranslate["CanonEOSDIGITALREBELXS"] = "Canon1000D"
-	modelTranslate["Canon EOS DIGITAL REBEL"] = "Canon300D"
 	modelTranslate["CanonEOSDIGITALREBEL"] = "Canon300D"
-
-	modelTranslate["motorola DROID3"] = "Droid3"
 	modelTranslate["motorolaDROID3"] = "Droid3"
-
-	modelTranslate2 := make(map[string]string)
-	modelTranslate2["EOS"] = ""
-	modelTranslate2["REBEL"] = ""
-	modelTranslate2["Rebel"] = ""
-	modelTranslate2["FC300S"] = "DJI-Phantom3Adv"
-	modelTranslate2["FC330"] = "DJI-Phantom4"
-	modelTranslate2["HG310Z"] = "DJI-OsmoPlus"
+	modelTranslate["CanonPowerShot"] = "CPS_"
+	modelTranslate["Canon PowerShot"] = "CPS_"
+	modelTranslate["EOS"] = ""
+	modelTranslate["REBEL"] = ""
+	modelTranslate["Rebel"] = ""
+	modelTranslate["FC300S"] = "DJI-Phantom3Adv"
+	modelTranslate["FC330"] = "DJI-Phantom4"
+	modelTranslate["HG310Z"] = "DJI-OsmoPlus"
 
 	spaceTranslate := make(map[string]string)
 	spaceTranslate[" "] = ""
@@ -263,8 +262,8 @@ SOURCEFILE:
 			model = v.Get("AndroidModel").String()
 		}
 
+		model = strmanip.StrReplace(model, modelReplace)
 		model = strmanip.Strtr(model, modelTranslate)
-		model = strmanip.Strtr(model, modelTranslate2)
 		model = strmanip.Strtr(model, spaceTranslate)
 
 		if v.Get("SerialNumber").Exists() {
