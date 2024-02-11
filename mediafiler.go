@@ -17,6 +17,7 @@ import (
 	"time"
 
 	"github.com/codingsince1985/checksum"
+	"github.com/d0ct0rvenkman/mediafiler/internal/fileops"
 	"github.com/d0ct0rvenkman/mediafiler/internal/logfmt"
 	"github.com/d0ct0rvenkman/mediafiler/internal/paths"
 	"github.com/d0ct0rvenkman/mediafiler/internal/strmanip"
@@ -380,7 +381,7 @@ SOURCEFILE:
 			fileLogger.Errorf("could not create destination directory! reason: %s", err)
 		}
 
-		err = os.Rename(sourceFile, destFile)
+		err = fileops.Move(sourceFile, destFile)
 		if err != nil {
 			fileLogger.WithFields(logrus.Fields{"verb": "error:"}).Errorf("could not rename file! reason: %s", err)
 		} else {
