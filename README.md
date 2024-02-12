@@ -115,5 +115,6 @@ video/x-msvideo/2007/06/20070625T052246.000Z-unknown.avi
 - [ ] Make file/path ignores based on regex
 - [ ] Make logging level configurable at run time
 - [ ] Make file/directory naming customizable via templates
+- [ ] Dry-run/no-op option
 - [ ] Refactor for tests
 - [ ] Tests
