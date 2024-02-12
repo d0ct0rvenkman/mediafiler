@@ -44,6 +44,8 @@ func main() {
 	// TODO: make these configurable, not hardcoded
 	// TODO: add ordering so two maps aren't necessary
 	modelReplace := make(map[string]string)
+	modelReplace["Canon EOS Rebel T7i"] = "Canon800D"
+	modelReplace["Canon EOS REBEL T3i"] = "Canon600D"
 	modelReplace["Canon EOS DIGITAL REBEL XS"] = "Canon1000D"
 	modelReplace["Canon EOS DIGITAL REBEL"] = "Canon300D"
 	modelReplace["motorola DROID3"] = "Droid3"
