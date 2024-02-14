@@ -118,3 +118,6 @@ video/x-msvideo/2007/06/20070625T052246.000Z-unknown.avi
 - [ ] Dry-run/no-op option
 - [ ] Refactor for tests
 - [ ] Tests
+- [ ] Command line flags
+- [ ] Configurable duplicate behavior (delete source duplicate, drop a symlink as a marker?, replace source with symlink?)
+- [ ] Configurable defaults (source/dest paths, duplicate behavior)
