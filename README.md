@@ -63,6 +63,20 @@ Files are renamed (moved) into the following structure, which is not currently c
 ```
 $DEST_ROOT_DIR/$MIME_TYPE/$MIME_SUBTYPE/$YEAR/$MONTH/$TIMESTAMP-MODEL.$EXTENSION
 ```
+# Metadata used for renaming
+mediafiler will look for the following fields in exiftool's JSON output (`exiftool -j`) to determine the timestamp an image was captured, in order. The first found will be used.
+```
+SubSecDateTimeOriginal
+DateTimeOriginal
+CreateDate
+ModifyDate
+```
+Similarly, the following fields are examined for camera model names.
+```
+Model
+AndroidModel
+```
+
 # File naming scheme
 Files are renamed based on the timestamp they were created. The tool will attempt to use subsecond-resolution timestamps if they're present and falls back to less precise timestamps if necessary. The timestamp format used is a slightly shortened RFC3339 format with the special characters and timezone info removed, as all timestamps are rendered as UTC/GMT. Exiftool handles the conversion to UTC as part of its processing. If time zone data is present in the image, the file can be predictably renamed using UTC. If time zone information is not present in the file's metadata, Exiftool assumes the timestamp retrieved from the file metadata is in local time for the machine where mediafiler/exiftool is running, which is then converted to UTC. This can be less than predictable if you're processing on a machine in a different timezone from where the image was taken.
 
