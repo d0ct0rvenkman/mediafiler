@@ -75,6 +75,7 @@ func main() {
 	// TODO: make log level configurable
 	log.SetFormatter(new(logfmt.NonDebugFormatter))
 	log.SetLevel(logrus.InfoLevel)
+	log.SetOutput(os.Stdout)
 
 	startLog := log.WithFields(logrus.Fields{"verb": "startup:"})
 
