@@ -64,6 +64,8 @@ func main() {
 	modelTranslate["HG310Z"] = "DJI-OsmoPlus"
 
 	spaceTranslate := make(map[string]string)
+	spaceTranslate["/"] = "_"
+	spaceTranslate["\\"] = "_"
 	spaceTranslate[" "] = ""
 
 	// TODO: make ignore patterns not hardcoded
