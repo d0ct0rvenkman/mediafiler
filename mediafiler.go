@@ -256,7 +256,7 @@ SOURCEFILE:
 			timestampFound = true
 
 		case v.Get("GPSDateTime").Exists(): // damnit, Nexus6!
-			timeInput, _ = strconv.ParseInt(v.Get("ModifyDate").String(), 10, 64)
+			timeInput, _ = strconv.ParseInt(v.Get("GPSDateTime").String(), 10, 64)
 			fileLogger.Debugf("timeInput ('%d') pulled from 'GPSDateTime'", timeInput)
 			fileLogger.Info("fell back to using 'GPSDateTime' for image timestamp, which is not necessarily accurate")
 			timeObj = time.UnixMilli(timeInput)
