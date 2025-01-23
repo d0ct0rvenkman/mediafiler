@@ -11,6 +11,9 @@ func Strtr(str string, replace map[string]string) string {
 	if len(replace) == 0 || len(str) == 0 {
 		return str
 	}
+
+	// as written, this doesn't behave predictably since the 'range replace' parts
+	// aren't guaranteed to preserve ordering.
 	for old, new := range replace {
 		str = strings.ReplaceAll(str, old, new)
 	}
@@ -24,6 +27,9 @@ func StrReplace(str string, replace map[string]string) string {
 	if len(replace) == 0 || len(str) == 0 {
 		return str
 	}
+
+	// as written, this doesn't behave predictably since the 'range replace' parts
+	// aren't guaranteed to preserve ordering.
 	for old, new := range replace {
 		if old == str {
 			str = new
