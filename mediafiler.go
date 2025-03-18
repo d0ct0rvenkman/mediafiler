@@ -41,32 +41,58 @@ func main() {
 	var supportedMIMETypes []string
 	var pathIgnoreSubstrings []string
 
+	var modelReplacer strmanip.Replacer
+	var spaceReplacer strmanip.Replacer
+
 	// TODO: make these configurable, not hardcoded
 	// TODO: add ordering so two maps aren't necessary
-	modelReplace := make(map[string]string)
-	modelReplace["Canon EOS Rebel T7i"] = "Canon800D"
-	modelReplace["Canon EOS REBEL T3i"] = "Canon600D"
-	modelReplace["Canon EOS DIGITAL REBEL XS"] = "Canon1000D"
-	modelReplace["Canon EOS DIGITAL REBEL"] = "Canon300D"
-	modelReplace["motorola DROID3"] = "Droid3"
+	// modelReplace := make(map[string]string)
+	// modelReplace["Canon EOS Rebel T7i"] = "Canon800D"
+	// modelReplace["Canon EOS REBEL T3i"] = "Canon600D"
+	// modelReplace["Canon EOS DIGITAL REBEL XS"] = "Canon1000D"
+	// modelReplace["Canon EOS DIGITAL REBEL"] = "Canon300D"
+	// modelReplace["motorola DROID3"] = "Droid3"
 
-	modelTranslate := make(map[string]string)
-	modelTranslate["CanonEOSDIGITALREBELXS"] = "Canon1000D"
-	modelTranslate["CanonEOSDIGITALREBEL"] = "Canon300D"
-	modelTranslate["motorolaDROID3"] = "Droid3"
-	modelTranslate["CanonPowerShot"] = "CPS_"
-	modelTranslate["Canon PowerShot"] = "CPS_"
-	modelTranslate["EOS"] = ""
-	modelTranslate["REBEL"] = ""
-	modelTranslate["Rebel"] = ""
-	modelTranslate["FC300S"] = "DJI-Phantom3Adv"
-	modelTranslate["FC330"] = "DJI-Phantom4"
-	modelTranslate["HG310Z"] = "DJI-OsmoPlus"
+	// modelTranslate := make(map[string]string)
+	// modelTranslate["CanonEOSDIGITALREBELXS"] = "Canon1000D"
+	// modelTranslate["CanonEOSDIGITALREBEL"] = "Canon300D"
+	// modelTranslate["motorolaDROID3"] = "Droid3"
+	// modelTranslate["CanonPowerShot"] = "CPS_"
+	// modelTranslate["Canon PowerShot"] = "CPS_"
+	// modelTranslate["EOS"] = ""
+	// modelTranslate["REBEL"] = ""
+	// modelTranslate["Rebel"] = ""
+	// modelTranslate["FC300S"] = "DJI-Phantom3Adv"
+	// modelTranslate["FC330"] = "DJI-Phantom4"
+	// modelTranslate["HG310Z"] = "DJI-OsmoPlus"
 
-	spaceTranslate := make(map[string]string)
-	spaceTranslate["/"] = "_"
-	spaceTranslate["\\"] = "_"
-	spaceTranslate[" "] = ""
+	// spaceTranslate := make(map[string]string)
+	// spaceTranslate["/"] = "_"
+	// spaceTranslate["\\"] = "_"
+	// spaceTranslate[" "] = ""
+
+	//modelReplacer.AddRule(strmanip.ReplacerRule{Type: "string", Find: "", ReplaceWith: ""})
+	modelReplacer.AddRule(strmanip.ReplacerRule{Type: "regex", Find: "^Canon EOS Rebel T7i$", ReplaceWith: "Canon800D"})
+	modelReplacer.AddRule(strmanip.ReplacerRule{Type: "regex", Find: "^Canon EOS REBEL T3i$", ReplaceWith: "Canon600D"})
+	modelReplacer.AddRule(strmanip.ReplacerRule{Type: "regex", Find: "^Canon EOS DIGITAL REBEL XS$", ReplaceWith: "Canon1000D"})
+	modelReplacer.AddRule(strmanip.ReplacerRule{Type: "regex", Find: "^Canon EOS DIGITAL REBEL$", ReplaceWith: "Canon300D"})
+	modelReplacer.AddRule(strmanip.ReplacerRule{Type: "regex", Find: "^motorola DROID3$", ReplaceWith: "Droid3"})
+
+	modelReplacer.AddRule(strmanip.ReplacerRule{Type: "string", Find: "CanonEOSDIGITALREBELXS", ReplaceWith: "Canon1000D"})
+	modelReplacer.AddRule(strmanip.ReplacerRule{Type: "string", Find: "CanonEOSDIGITALREBEL", ReplaceWith: "Canon300D"})
+	modelReplacer.AddRule(strmanip.ReplacerRule{Type: "string", Find: "motorolaDROID3", ReplaceWith: "Droid3"})
+	modelReplacer.AddRule(strmanip.ReplacerRule{Type: "string", Find: "CanonPowerShot", ReplaceWith: "CPS_"})
+	modelReplacer.AddRule(strmanip.ReplacerRule{Type: "string", Find: "Canon PowerShot", ReplaceWith: "CPS_"})
+	modelReplacer.AddRule(strmanip.ReplacerRule{Type: "string", Find: "EOS", ReplaceWith: ""})
+	modelReplacer.AddRule(strmanip.ReplacerRule{Type: "string", Find: "REBEL", ReplaceWith: ""})
+	modelReplacer.AddRule(strmanip.ReplacerRule{Type: "string", Find: "Rebel", ReplaceWith: ""})
+	modelReplacer.AddRule(strmanip.ReplacerRule{Type: "string", Find: "FC300S", ReplaceWith: "DJI-Phantom3Adv"})
+	modelReplacer.AddRule(strmanip.ReplacerRule{Type: "string", Find: "FC330", ReplaceWith: "DJI-Phantom4"})
+	modelReplacer.AddRule(strmanip.ReplacerRule{Type: "string", Find: "HG310Z", ReplaceWith: "HG310Z"})
+
+	spaceReplacer.AddRule(strmanip.ReplacerRule{Type: "string", Find: `/`, ReplaceWith: "_"})
+	spaceReplacer.AddRule(strmanip.ReplacerRule{Type: "string", Find: `\`, ReplaceWith: "_"})
+	spaceReplacer.AddRule(strmanip.ReplacerRule{Type: "string", Find: ` `, ReplaceWith: ""})
 
 	// TODO: make ignore patterns not hardcoded
 	// TODO: make ignore patterns regex-capable
@@ -275,18 +301,17 @@ SOURCEFILE:
 			model = v.Get("AndroidModel").String()
 		}
 
-		model = strmanip.StrReplace(model, modelReplace)
-		model = strmanip.Strtr(model, modelTranslate)
-		model = strmanip.Strtr(model, spaceTranslate)
+		model, _ = modelReplacer.Replace(model)
+		model, _ = spaceReplacer.Replace(model)
 
 		if v.Get("SerialNumber").Exists() {
 			cameraSerial = v.Get("SerialNumber").String()
-			cameraSerial = strmanip.Strtr(cameraSerial, spaceTranslate)
+			cameraSerial, _ = spaceReplacer.Replace(cameraSerial)
 		}
 
 		if v.Get("LensSerialNumber").Exists() {
 			lensSerial = v.Get("LensSerialNumber").String()
-			lensSerial = strmanip.Strtr(lensSerial, spaceTranslate)
+			lensSerial, _ = spaceReplacer.Replace(lensSerial)
 		}
 
 		fileLogger.Debugf("model: %s", model)

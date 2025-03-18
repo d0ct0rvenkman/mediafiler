@@ -123,7 +123,7 @@ video/x-msvideo/2007/06/20070625T052246.000Z-unknown.avi
 
 # TODO
 - [ ] Make camera model substitutions/translations configurable via config file
-- [ ] Make camera model translations based on regex and not just substitution
+- [X] Make camera model translations based on regex and not just substitution
 - [ ] Don't assume unix-like path separators (Windows support)
 - [ ] Make file/path ignores configurable via config file 
 - [ ] Make file/path ignores based on regex
