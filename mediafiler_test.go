@@ -75,7 +75,7 @@ func Test_generateFilenameBase(t *testing.T) {
 		}
 
 		if !gjson.ValidBytes(fileContents) {
-			t.Fatalf("failed to unmarshal JSON output from test case")
+			t.Fatalf("failed to unmarshal JSON from test case")
 		}
 
 		result := gjson.ParseBytes(fileContents)
