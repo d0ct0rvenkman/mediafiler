@@ -1,0 +1,116 @@
+[
+    {
+        "casename": "all-use-SubSecDateTimeOriginal",
+        "expected": {
+            "newPathSuffix": "image/jpeg/2024/10",
+            "newFileName": "20241024T194710.250Z-Foobar FancyShot 8675309",
+            "fileExtension": "jpg",
+            "err": ""
+        },
+        "metadata": {
+            "FileTypeExtension": "jpg",
+            "MIMEType": "image/jpeg",
+            "SubSecDateTimeOriginal": 1729799230250,
+            "DateTimeOriginal": 1629799230000,
+            "CreateDate": 1529799230000,
+            "ModifyDate": 1429799230000,
+            "GPSDateTime": 1329799230000,
+            "Model": "Foobar FancyShot 8675309",
+            "AndroidModel": "Foobar FancyShot 8675309",
+            "SerialNumber": "1234567890",
+            "LensSerialNumber": "9876543210"
+        }
+    },
+    {
+        "casename": "subset-use-DateTimeOriginal",
+        "expected": {
+            "newPathSuffix": "image/jpeg/2021/08",
+            "newFileName": "20210824T100030.000Z-Foobar FancyShot 8675309",
+            "fileExtension": "jpg",
+            "err": ""
+        },
+        "metadata": {
+            "FileTypeExtension": "jpg",
+            "MIMEType": "image/jpeg",
+            "DateTimeOriginal": 1629799230000,
+            "CreateDate": 1529799230000,
+            "ModifyDate": 1429799230000,
+            "GPSDateTime": 1329799230000,
+            "Model": "Foobar FancyShot 8675309",
+            "AndroidModel": "Foobar FancyShot 8675309",
+            "SerialNumber": "1234567890",
+            "LensSerialNumber": "9876543210"
+        }
+    },    {
+        "casename": "subset-use-CreateDate",
+        "expected": {
+            "newPathSuffix": "image/jpeg/2018/06",
+            "newFileName": "20180624T001350.000Z-Foobar FancyShot 8675309",
+            "fileExtension": "jpg",
+            "err": ""
+        },
+        "metadata": {
+            "FileTypeExtension": "jpg",
+            "MIMEType": "image/jpeg",
+            "CreateDate": 1529799230000,
+            "ModifyDate": 1429799230000,
+            "GPSDateTime": 1329799230000,
+            "Model": "Foobar FancyShot 8675309",
+            "AndroidModel": "Foobar FancyShot 8675309",
+            "SerialNumber": "1234567890",
+            "LensSerialNumber": "9876543210"
+        }
+    },    {
+        "casename": "subset-use-ModifyDate",
+        "expected": {
+            "newPathSuffix": "image/jpeg/2015/04",
+            "newFileName": "20150423T142710.000Z-Foobar FancyShot 8675309",
+            "fileExtension": "jpg",
+            "err": ""
+        },
+        "metadata": {
+            "FileTypeExtension": "jpg",
+            "MIMEType": "image/jpeg",
+            "ModifyDate": 1429799230000,
+            "GPSDateTime": 1329799230000,
+            "Model": "Foobar FancyShot 8675309",
+            "AndroidModel": "Foobar FancyShot 8675309",
+            "SerialNumber": "1234567890",
+            "LensSerialNumber": "9876543210"
+        }
+    },    {
+        "casename": "subset-use-GPSDateTime",
+        "expected": {
+            "newPathSuffix": "image/jpeg/2012/02",
+            "newFileName": "20120221T044030.000Z-Foobar FancyShot 8675309",
+            "fileExtension": "jpg",
+            "err": ""
+        },
+        "metadata": {
+            "FileTypeExtension": "jpg",
+            "MIMEType": "image/jpeg",
+            "GPSDateTime": 1329799230000,
+            "Model": "Foobar FancyShot 8675309",
+            "AndroidModel": "Foobar FancyShot 8675309",
+            "SerialNumber": "1234567890",
+            "LensSerialNumber": "9876543210"
+        }
+    },    {
+        "casename": "none-err-expected",
+        "expected": {
+            "newPathSuffix": "",
+            "newFileName": "",
+            "fileExtension": "",
+            "err": "we did not find a timestamp"
+        },
+        "metadata": {
+            "FileTypeExtension": "jpg",
+            "MIMEType": "image/jpeg",
+            "Model": "Foobar FancyShot 8675309",
+            "AndroidModel": "Foobar FancyShot 8675309",
+            "SerialNumber": "1234567890",
+            "LensSerialNumber": "9876543210"
+        }
+    }
+
+]

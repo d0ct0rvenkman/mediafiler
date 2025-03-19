@@ -177,7 +177,7 @@ func main() {
 	}
 
 	if !gjson.ValidBytes(output) {
-		startLog.Fatalf("failed to unmarshal JSON output from exiftool. reason: %s", err)
+		startLog.Fatalf("failed to unmarshal JSON output from exiftool")
 	}
 
 	result := gjson.ParseBytes(output)
@@ -187,6 +187,8 @@ func main() {
 
 SOURCEFILE:
 	for k, v := range result.Array() {
+		var sourceSum string
+
 		sourceFile := v.Get("SourceFile").String()
 
 		fileLogger := log.WithFields(logrus.Fields{
@@ -197,20 +199,6 @@ SOURCEFILE:
 		})
 
 		log.WithFields(logrus.Fields{"verb": "processing:"}).Infof("%s (%d of %d)", sourceFile, k+1, fileCount)
-		var timeObj time.Time
-		var timeInput int64
-		var timestampFound bool
-		var sourceSum string
-		var serr error
-
-		timestampFound = false
-		model := "unknown"
-		cameraSerial := ""
-		lensSerial := ""
-		mimeType := ""
-		mimeSubType := ""
-		newPathSuffix := ""
-		fileExtension := ""
 
 		// ignore files from filtered paths
 		for _, substr := range pathIgnoreSubstrings {
@@ -226,123 +214,11 @@ SOURCEFILE:
 			continue SOURCEFILE
 		}
 
-		if v.Get("FileTypeExtension").Exists() {
-			fileExtension = strings.ToLower(v.Get("FileTypeExtension").String())
-		} else {
-			fileLogger.WithFields(logrus.Fields{"verb": "skip:"}).Infof("File doesn't have an extension? That's weird.")
+		newPathSuffix, newFileName, fileExtension, err := generateFilenameBase(v, supportedMIMETypes, modelReplacer, spaceReplacer)
+		if err != nil {
+			fileLogger.WithFields(logrus.Fields{"verb": "skip:"}).Infof("generateFilenameBase: %s", err)
 			continue SOURCEFILE
 		}
-
-		if v.Get("MIMEType").Exists() {
-			// using "mimeType, mimeSubType, ok := " seems to make the two mime variables local in scope?
-			ok := false
-			mimeType, mimeSubType, ok = strings.Cut(v.Get("MIMEType").String(), "/")
-			if !ok {
-				fileLogger.WithFields(logrus.Fields{"verb": "skip:"}).Infof("MIMEType string '%s' could not be cut.", v.Get("MIMEType").String())
-				continue SOURCEFILE
-			}
-
-			if mimeType == "" || mimeSubType == "" {
-				fileLogger.WithFields(logrus.Fields{"verb": "skip:"}).Infof("MIME Type ('%s') or Subtype ('%s') cannot be empty", mimeType, mimeSubType)
-				continue SOURCEFILE
-			}
-		} else {
-			fileLogger.WithFields(logrus.Fields{"verb": "skip:"}).Info("MIME type for this file was not found.")
-			continue SOURCEFILE
-		}
-
-		if !slices.Contains(supportedMIMETypes, mimeType) {
-			fileLogger.WithFields(logrus.Fields{"verb": "skip:"}).Infof("The MIME type ('%s') for this file is not supported", mimeType)
-			continue SOURCEFILE
-		}
-
-		switch {
-		case v.Get("SubSecDateTimeOriginal").Exists():
-			timeInput, _ = strconv.ParseInt(v.Get("SubSecDateTimeOriginal").String(), 10, 64)
-			fileLogger.Debugf("timeInput ('%d') pulled from 'SubSecDateTimeOriginal'", timeInput)
-			timeObj = time.UnixMilli(timeInput)
-			timestampFound = true
-
-		case v.Get("DateTimeOriginal").Exists():
-			timeInput, _ = strconv.ParseInt(v.Get("DateTimeOriginal").String(), 10, 64)
-			fileLogger.Debugf("timeInput ('%d') pulled from 'DateTimeOriginal'", timeInput)
-			timeObj = time.UnixMilli(timeInput)
-			timestampFound = true
-
-		case v.Get("CreateDate").Exists():
-			timeInput, _ = strconv.ParseInt(v.Get("CreateDate").String(), 10, 64)
-			fileLogger.Debugf("timeInput ('%d') pulled from 'CreateDate'", timeInput)
-			timeObj = time.UnixMilli(timeInput)
-			timestampFound = true
-
-		case v.Get("ModifyDate").Exists(): // damnit, DROID3!
-			timeInput, _ = strconv.ParseInt(v.Get("ModifyDate").String(), 10, 64)
-			fileLogger.Debugf("timeInput ('%d') pulled from 'ModifyDate'", timeInput)
-			timeObj = time.UnixMilli(timeInput)
-			timestampFound = true
-
-		case v.Get("GPSDateTime").Exists(): // damnit, Nexus6!
-			timeInput, _ = strconv.ParseInt(v.Get("GPSDateTime").String(), 10, 64)
-			fileLogger.Debugf("timeInput ('%d') pulled from 'GPSDateTime'", timeInput)
-			fileLogger.Info("fell back to using 'GPSDateTime' for image timestamp, which is not necessarily accurate")
-			timeObj = time.UnixMilli(timeInput)
-			timestampFound = true
-		}
-
-		if !timestampFound {
-			fileLogger.WithFields(logrus.Fields{"verb": "skip:"}).Info("we did not find a timestamp")
-			continue SOURCEFILE
-		}
-
-		switch {
-		case v.Get("Model").Exists():
-			model = v.Get("Model").String()
-		case v.Get("AndroidModel").Exists():
-			model = v.Get("AndroidModel").String()
-		}
-
-		model, _ = modelReplacer.Replace(model)
-		model, _ = spaceReplacer.Replace(model)
-
-		if v.Get("SerialNumber").Exists() {
-			cameraSerial = v.Get("SerialNumber").String()
-			cameraSerial, _ = spaceReplacer.Replace(cameraSerial)
-		}
-
-		if v.Get("LensSerialNumber").Exists() {
-			lensSerial = v.Get("LensSerialNumber").String()
-			lensSerial, _ = spaceReplacer.Replace(lensSerial)
-		}
-
-		fileLogger.Debugf("model: %s", model)
-		fileLogger.Debugf("cameraSerial: %s", cameraSerial)
-		fileLogger.Debugf("lensSerial: %s", lensSerial)
-		fileLogger.Debugf("timestamp: %s", timeObj.String())
-		fileLogger.Debugf("MIME: %s / %s", mimeType, mimeSubType)
-		fileLogger.Debugf("fileExtension: %s", fileExtension)
-
-		// TODO: make this something that can be made into a template
-		newPathSuffix = fmt.Sprintf("%s%s%s%s%04d%s%02d",
-			mimeType, dirSep, mimeSubType, dirSep, timeObj.UTC().Year(), dirSep, timeObj.UTC().Month())
-
-		newFileName := fmt.Sprintf("%04d%02d%02dT%02d%02d%02d.%03dZ-%s",
-			timeObj.UTC().Year(),
-			timeObj.UTC().Month(),
-			timeObj.UTC().Day(),
-			timeObj.UTC().Hour(),
-			timeObj.UTC().Minute(),
-			timeObj.UTC().Second(),
-			timeObj.UTC().Round(time.Microsecond).Nanosecond()/1e6,
-			model,
-		)
-
-		// if cameraSerial != "" {
-		// 	newFileName = fmt.Sprintf("%s_CS%s", newFileName, cameraSerial)
-		// }
-
-		// if lensSerial != "" {
-		// 	newFileName = fmt.Sprintf("%s_LS%s", newFileName, lensSerial)
-		// }
 
 		fileLogger.Debugf("destRootDir: %s", destRootDir)
 		fileLogger.Debugf("newPathSuffix: %s", newPathSuffix)
@@ -377,8 +253,8 @@ SOURCEFILE:
 				}
 
 				if suffixIndex == 0 {
-					sourceSum, serr = checksum.SHA256sum(sourceFile)
-					if serr != nil {
+					sourceSum, err = checksum.SHA256sum(sourceFile)
+					if err != nil {
 						fileLogger.WithFields(logrus.Fields{"verb": "skip:"}).Error("couldn't checksum the source file.")
 						continue SOURCEFILE
 					}
@@ -426,4 +302,145 @@ SOURCEFILE:
 		}
 
 	} // ends: for k, v := range result.Array()
+}
+
+func generateFilenameBase(meta gjson.Result, supportedMIMETypes []string, modelReplacer strmanip.Replacer, spaceReplacer strmanip.Replacer) (string, string, string, error) {
+	var timeObj time.Time
+	var timeInput int64
+	var timestampFound bool
+	var serr error
+
+	gfbLogger := log.WithFields(logrus.Fields{
+		"sourceFile": meta.Get("SourceFile").String(),
+	})
+
+	timestampFound = false
+	model := "unknown"
+	cameraSerial := ""
+	lensSerial := ""
+	mimeType := ""
+	mimeSubType := ""
+	newPathSuffix := ""
+	fileExtension := ""
+
+	if meta.Get("FileTypeExtension").Exists() {
+		fileExtension = strings.ToLower(meta.Get("FileTypeExtension").String())
+	} else {
+		serr = errors.New("file metadata doesn't contain an extension")
+		return "", "", "", serr
+	}
+
+	if meta.Get("MIMEType").Exists() {
+		// using "mimeType, mimeSubType, ok := " seems to make the two mime variables local in scope?
+		ok := false
+		mimeType, mimeSubType, ok = strings.Cut(meta.Get("MIMEType").String(), "/")
+		if !ok {
+			serr = fmt.Errorf("MIMEType string '%s' could not be cut", meta.Get("MIMEType").String())
+			return "", "", "", serr
+		}
+
+		if mimeType == "" || mimeSubType == "" {
+			serr = fmt.Errorf("MIME Type ('%s') or Subtype ('%s') cannot be empty", mimeType, mimeSubType)
+			return "", "", "", serr
+		}
+	} else {
+		serr = fmt.Errorf("MIME type for this file was not found")
+		return "", "", "", serr
+	}
+
+	if !slices.Contains(supportedMIMETypes, mimeType) {
+		serr = fmt.Errorf("the MIME type ('%s') for this file is not supported", mimeType)
+		return "", "", "", serr
+	}
+
+	switch {
+	case meta.Get("SubSecDateTimeOriginal").Exists():
+		timeInput, _ = strconv.ParseInt(meta.Get("SubSecDateTimeOriginal").String(), 10, 64)
+		gfbLogger.Debugf("timeInput ('%d') pulled from 'SubSecDateTimeOriginal'", timeInput)
+		timeObj = time.UnixMilli(timeInput)
+		timestampFound = true
+
+	case meta.Get("DateTimeOriginal").Exists():
+		timeInput, _ = strconv.ParseInt(meta.Get("DateTimeOriginal").String(), 10, 64)
+		gfbLogger.Debugf("timeInput ('%d') pulled from 'DateTimeOriginal'", timeInput)
+		timeObj = time.UnixMilli(timeInput)
+		timestampFound = true
+
+	case meta.Get("CreateDate").Exists():
+		timeInput, _ = strconv.ParseInt(meta.Get("CreateDate").String(), 10, 64)
+		gfbLogger.Debugf("timeInput ('%d') pulled from 'CreateDate'", timeInput)
+		timeObj = time.UnixMilli(timeInput)
+		timestampFound = true
+
+	case meta.Get("ModifyDate").Exists(): // damnit, DROID3!
+		timeInput, _ = strconv.ParseInt(meta.Get("ModifyDate").String(), 10, 64)
+		gfbLogger.Debugf("timeInput ('%d') pulled from 'ModifyDate'", timeInput)
+		timeObj = time.UnixMilli(timeInput)
+		timestampFound = true
+
+	case meta.Get("GPSDateTime").Exists(): // damnit, Nexus6!
+		timeInput, _ = strconv.ParseInt(meta.Get("GPSDateTime").String(), 10, 64)
+		gfbLogger.Debugf("timeInput ('%d') pulled from 'GPSDateTime'", timeInput)
+		gfbLogger.Info("fell back to using 'GPSDateTime' for image timestamp, which is not necessarily accurate")
+		timeObj = time.UnixMilli(timeInput)
+		timestampFound = true
+	}
+
+	if !timestampFound {
+		serr = fmt.Errorf("we did not find a timestamp")
+		return "", "", "", serr
+	}
+
+	switch {
+	case meta.Get("Model").Exists():
+		model = meta.Get("Model").String()
+	case meta.Get("AndroidModel").Exists():
+		model = meta.Get("AndroidModel").String()
+	}
+
+	model, _ = modelReplacer.Replace(model)
+	model, _ = spaceReplacer.Replace(model)
+
+	if meta.Get("SerialNumber").Exists() {
+		cameraSerial = meta.Get("SerialNumber").String()
+		cameraSerial, _ = spaceReplacer.Replace(cameraSerial)
+	}
+
+	if meta.Get("LensSerialNumber").Exists() {
+		lensSerial = meta.Get("LensSerialNumber").String()
+		lensSerial, _ = spaceReplacer.Replace(lensSerial)
+	}
+
+	gfbLogger.Debugf("model: %s", model)
+	gfbLogger.Debugf("cameraSerial: %s", cameraSerial)
+	gfbLogger.Debugf("lensSerial: %s", lensSerial)
+	gfbLogger.Debugf("timestamp: %s", timeObj.String())
+	gfbLogger.Debugf("MIME: %s / %s", mimeType, mimeSubType)
+	gfbLogger.Debugf("fileExtension: %s", fileExtension)
+
+	// TODO: make this something that can be made into a template
+	newPathSuffix = fmt.Sprintf("%s%s%s%s%04d%s%02d",
+		mimeType, dirSep, mimeSubType, dirSep, timeObj.UTC().Year(), dirSep, timeObj.UTC().Month())
+
+	newFileName := fmt.Sprintf("%04d%02d%02dT%02d%02d%02d.%03dZ-%s",
+		timeObj.UTC().Year(),
+		timeObj.UTC().Month(),
+		timeObj.UTC().Day(),
+		timeObj.UTC().Hour(),
+		timeObj.UTC().Minute(),
+		timeObj.UTC().Second(),
+		timeObj.UTC().Round(time.Microsecond).Nanosecond()/1e6,
+		model,
+	)
+
+	// TODO: Should make this something the user can enable/disable
+	// if cameraSerial != "" {
+	// 	newFileName = fmt.Sprintf("%s_CS%s", newFileName, cameraSerial)
+	// }
+
+	// if lensSerial != "" {
+	// 	newFileName = fmt.Sprintf("%s_LS%s", newFileName, lensSerial)
+	// }
+
+	return newPathSuffix, newFileName, fileExtension, nil
 }

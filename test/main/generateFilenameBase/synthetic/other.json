@@ -1,0 +1,134 @@
+[
+    {
+        "casename": "noextension-errexpected",
+        "expected": {
+            "newPathSuffix": "",
+            "newFileName": "",
+            "fileExtension": "",
+            "err": "file metadata doesn't contain an extension"
+        },
+        "metadata": {
+            "MIMEType": "image/jpeg",
+            "SubSecDateTimeOriginal": 1729799230250,
+            "DateTimeOriginal": 1729799230000,
+            "CreateDate": 1729799230000,
+            "ModifyDate": 1729799230000,
+            "GPSDateTime": 1729799230000,
+            "Model": "Foobar FancyShot 8675309",
+            "AndroidModel": "Foobar FancyShot 8675309",
+            "SerialNumber": "1234567890",
+            "LensSerialNumber": "9876543210"
+        }
+    },
+    {
+        "casename": "noMIMEType-errexpected",
+        "expected": {
+            "newPathSuffix": "",
+            "newFileName": "",
+            "fileExtension": "",
+            "err": "MIME type for this file was not found"
+        },
+        "metadata": {
+            "FileTypeExtension": "jpg",
+            "SubSecDateTimeOriginal": 1729799230250,
+            "DateTimeOriginal": 1729799230000,
+            "CreateDate": 1729799230000,
+            "ModifyDate": 1729799230000,
+            "GPSDateTime": 1729799230000,
+            "Model": "Foobar FancyShot 8675309",
+            "AndroidModel": "Foobar FancyShot 8675309",
+            "SerialNumber": "1234567890",
+            "LensSerialNumber": "9876543210"
+        }
+    },
+    {
+        "casename": "noMIMETypeseparator-errexpected",
+        "expected": {
+            "newPathSuffix": "",
+            "newFileName": "",
+            "fileExtension": "",
+            "err": "MIMEType string 'imagejpeg' could not be cut"
+        },
+        "metadata": {
+            "FileTypeExtension": "jpg",
+            "MIMEType": "imagejpeg",
+            "SubSecDateTimeOriginal": 1729799230250,
+            "DateTimeOriginal": 1729799230000,
+            "CreateDate": 1729799230000,
+            "ModifyDate": 1729799230000,
+            "GPSDateTime": 1729799230000,
+            "Model": "Foobar FancyShot 8675309",
+            "AndroidModel": "Foobar FancyShot 8675309",
+            "SerialNumber": "1234567890",
+            "LensSerialNumber": "9876543210"
+        }
+    },
+    {
+        "casename": "noMIMEPrimaryType-errexpected",
+        "expected": {
+            "newPathSuffix": "",
+            "newFileName": "",
+            "fileExtension": "",
+            "err": "MIME Type ('') or Subtype ('jpeg') cannot be empty"
+        },
+        "metadata": {
+            "FileTypeExtension": "jpg",
+            "MIMEType": "/jpeg",
+            "SubSecDateTimeOriginal": 1729799230250,
+            "DateTimeOriginal": 1729799230000,
+            "CreateDate": 1729799230000,
+            "ModifyDate": 1729799230000,
+            "GPSDateTime": 1729799230000,
+            "Model": "Foobar FancyShot 8675309",
+            "AndroidModel": "Foobar FancyShot 8675309",
+            "SerialNumber": "1234567890",
+            "LensSerialNumber": "9876543210"
+        }
+    },
+    {
+        "casename": "noMIMESubType-errexpected",
+        "expected": {
+            "newPathSuffix": "",
+            "newFileName": "",
+            "fileExtension": "",
+            "err": "MIME Type ('image') or Subtype ('') cannot be empty"
+        },
+        "metadata": {
+            "FileTypeExtension": "jpg",
+            "MIMEType": "image/",
+            "SubSecDateTimeOriginal": 1729799230250,
+            "DateTimeOriginal": 1729799230000,
+            "CreateDate": 1729799230000,
+            "ModifyDate": 1729799230000,
+            "GPSDateTime": 1729799230000,
+            "Model": "Foobar FancyShot 8675309",
+            "AndroidModel": "Foobar FancyShot 8675309",
+            "SerialNumber": "1234567890",
+            "LensSerialNumber": "9876543210"
+        }
+    },
+    {
+        "casename": "MIMETypeunsupported-errexpected",
+        "expected": {
+            "newPathSuffix": "",
+            "newFileName": "",
+            "fileExtension": "",
+            "err": "the MIME type ('whizbang') for this file is not supported"
+        },
+        "metadata": {
+            "FileTypeExtension": "jpg",
+            "MIMEType": "whizbang/jpeg",
+            "SubSecDateTimeOriginal": 1729799230250,
+            "DateTimeOriginal": 1729799230000,
+            "CreateDate": 1729799230000,
+            "ModifyDate": 1729799230000,
+            "GPSDateTime": 1729799230000,
+            "Model": "Foobar FancyShot 8675309",
+            "AndroidModel": "Foobar FancyShot 8675309",
+            "SerialNumber": "1234567890",
+            "LensSerialNumber": "9876543210"
+        }
+    }
+
+
+]

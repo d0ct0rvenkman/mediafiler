@@ -1,0 +1,24 @@
+[
+    {
+        "casename": "template",
+        "expected": {
+            "newPathSuffix": "image/jpeg/2024/10",
+            "newFileName": "20241024T194710.250Z-Foobar FancyShot 8675309",
+            "fileExtension": "jpg",
+            "err": ""
+        },
+        "metadata": {
+            "FileTypeExtension": "jpg",
+            "MIMEType": "image/jpeg",
+            "SubSecDateTimeOriginal": 1729799230250,
+            "DateTimeOriginal": 1729799230000,
+            "CreateDate": 1729799230000,
+            "ModifyDate": 1729799230000,
+            "GPSDateTime": 1729799230000,
+            "Model": "Foobar FancyShot 8675309",
+            "AndroidModel": "Foobar FancyShot 8675309",
+            "SerialNumber": "1234567890",
+            "LensSerialNumber": "9876543210"
+        }
+    }
+]
