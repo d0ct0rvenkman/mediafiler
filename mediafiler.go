@@ -88,7 +88,7 @@ func main() {
 	modelReplacer.AddRule(strmanip.ReplacerRule{Type: "string", Find: "Rebel", ReplaceWith: ""})
 	modelReplacer.AddRule(strmanip.ReplacerRule{Type: "string", Find: "FC300S", ReplaceWith: "DJI-Phantom3Adv"})
 	modelReplacer.AddRule(strmanip.ReplacerRule{Type: "string", Find: "FC330", ReplaceWith: "DJI-Phantom4"})
-	modelReplacer.AddRule(strmanip.ReplacerRule{Type: "string", Find: "HG310Z", ReplaceWith: "HG310Z"})
+	modelReplacer.AddRule(strmanip.ReplacerRule{Type: "string", Find: "HG310Z", ReplaceWith: "DJI-OsmoPlus"})
 
 	spaceReplacer.AddRule(strmanip.ReplacerRule{Type: "string", Find: `/`, ReplaceWith: "_"})
 	spaceReplacer.AddRule(strmanip.ReplacerRule{Type: "string", Find: `\`, ReplaceWith: "_"})
