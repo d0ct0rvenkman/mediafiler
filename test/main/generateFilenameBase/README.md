@@ -15,5 +15,11 @@ Test Case format
 ]
 ```
 
-Generate test case skeletons from existing files in the current directory:
-```exiftool -r -json -dateFormat "%s%-3f" . | jq '[{casename:"", expected: {newPathSuffix:"", newFileName:"", fileExtension:"", err:""}, metadata: .[]}]'```
+Generate test case skeletons from existing files with this helper function:
+```
+function mediafiler_testcase {
+  exiftool -r -json -dateFormat "%s%-3f" $1 | jq '[{casename:"", expected: {newPathSuffix:"", newFileName:"", fileExtension:"", err:""}, metadata: .[]}]' | sed -r 's/"GPS(Latitude|Longitude|Position|Coordinates|Coordinates-err)": "(.*?)"([,]?)$/"GPS\1": "redacted"\3/g'
+}
+```
+
+
