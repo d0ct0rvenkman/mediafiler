@@ -28,7 +28,7 @@ Check out README.md in ./test/main/generateFilenameBase for more info on test fi
 func Test_generateFilenameBase(t *testing.T) {
 	casesProcessed := 0
 
-	testDataPath := "./test/main/generateFilenameBase"
+	testDataPath := "test/main/generateFilenameBase/"
 
 	var supportedMIMETypes []string
 	supportedMIMETypes = append(supportedMIMETypes, "image", "video")
@@ -87,6 +87,7 @@ func Test_generateFilenameBase(t *testing.T) {
 			casesProcessed++
 
 			var casename string
+			var fqcasename string
 			var exp_newPathSuffix string
 			var exp_newFileName string
 			var exp_fileExtension string
@@ -104,7 +105,9 @@ func Test_generateFilenameBase(t *testing.T) {
 				t.Fatalf("test case name for simulated file %d in %s is empty", casenum, v)
 			}
 
-			t.Run(v+"-"+fmt.Sprintf("%d", casenum)+"-"+casename, func(t *testing.T) {
+			fqcasename, _ = spaceReplacer.Replace(v[len(testDataPath):] + "-" + fmt.Sprintf("%d", casenum) + "-" + casename)
+
+			t.Run(fqcasename, func(t *testing.T) {
 
 				tmpjson = testcase.Get("expected.newPathSuffix")
 				if !tmpjson.Exists() {
