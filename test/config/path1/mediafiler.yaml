@@ -1,0 +1,2 @@
+dry-run: true
+exiftool-binary: /usr/bin/path1/exiftool

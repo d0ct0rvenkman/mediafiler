@@ -1,0 +1,16 @@
+{
+    "this": "is",
+    "a": {
+        "bad": "config",
+        "file": "because"
+    },
+    "it": [
+       "is",
+       "json",
+       "and",
+       "should",
+       "be",
+       "yaml"
+    ]
+
+}

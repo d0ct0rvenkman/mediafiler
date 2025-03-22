@@ -17,6 +17,7 @@ import (
 	"time"
 
 	"github.com/codingsince1985/checksum"
+	"github.com/d0ct0rvenkman/mediafiler/internal/config"
 	"github.com/d0ct0rvenkman/mediafiler/internal/fileops"
 	"github.com/d0ct0rvenkman/mediafiler/internal/logfmt"
 	"github.com/d0ct0rvenkman/mediafiler/internal/paths"
@@ -32,6 +33,8 @@ const (
 )
 
 var log = logrus.New()
+var confLoaded bool
+var confErr error
 
 func main() {
 	var workDir string
@@ -39,95 +42,82 @@ func main() {
 	var merr error
 	var err error
 	var supportedMIMETypes []string
-	var pathIgnoreSubstrings []string
 
-	var modelReplacer strmanip.Replacer
-	var spaceReplacer strmanip.Replacer
+	dryrun := false
 
-	// TODO: make these configurable, not hardcoded
-	// TODO: add ordering so two maps aren't necessary
-	// modelReplace := make(map[string]string)
-	// modelReplace["Canon EOS Rebel T7i"] = "Canon800D"
-	// modelReplace["Canon EOS REBEL T3i"] = "Canon600D"
-	// modelReplace["Canon EOS DIGITAL REBEL XS"] = "Canon1000D"
-	// modelReplace["Canon EOS DIGITAL REBEL"] = "Canon300D"
-	// modelReplace["motorola DROID3"] = "Droid3"
-
-	// modelTranslate := make(map[string]string)
-	// modelTranslate["CanonEOSDIGITALREBELXS"] = "Canon1000D"
-	// modelTranslate["CanonEOSDIGITALREBEL"] = "Canon300D"
-	// modelTranslate["motorolaDROID3"] = "Droid3"
-	// modelTranslate["CanonPowerShot"] = "CPS_"
-	// modelTranslate["Canon PowerShot"] = "CPS_"
-	// modelTranslate["EOS"] = ""
-	// modelTranslate["REBEL"] = ""
-	// modelTranslate["Rebel"] = ""
-	// modelTranslate["FC300S"] = "DJI-Phantom3Adv"
-	// modelTranslate["FC330"] = "DJI-Phantom4"
-	// modelTranslate["HG310Z"] = "DJI-OsmoPlus"
-
-	// spaceTranslate := make(map[string]string)
-	// spaceTranslate["/"] = "_"
-	// spaceTranslate["\\"] = "_"
-	// spaceTranslate[" "] = ""
-
-	//modelReplacer.AddRule(strmanip.ReplacerRule{Type: "string", Find: "", ReplaceWith: ""})
-	modelReplacer.AddRule(strmanip.ReplacerRule{Type: "regex", Find: "^Canon EOS Rebel T7i$", ReplaceWith: "Canon800D"})
-	modelReplacer.AddRule(strmanip.ReplacerRule{Type: "regex", Find: "^Canon EOS REBEL T3i$", ReplaceWith: "Canon600D"})
-	modelReplacer.AddRule(strmanip.ReplacerRule{Type: "regex", Find: "^Canon EOS DIGITAL REBEL XS$", ReplaceWith: "Canon1000D"})
-	modelReplacer.AddRule(strmanip.ReplacerRule{Type: "regex", Find: "^Canon EOS DIGITAL REBEL$", ReplaceWith: "Canon300D"})
-	modelReplacer.AddRule(strmanip.ReplacerRule{Type: "regex", Find: "^motorola DROID3$", ReplaceWith: "Droid3"})
-
-	modelReplacer.AddRule(strmanip.ReplacerRule{Type: "string", Find: "CanonEOSDIGITALREBELXS", ReplaceWith: "Canon1000D"})
-	modelReplacer.AddRule(strmanip.ReplacerRule{Type: "string", Find: "CanonEOSDIGITALREBEL", ReplaceWith: "Canon300D"})
-	modelReplacer.AddRule(strmanip.ReplacerRule{Type: "string", Find: "motorolaDROID3", ReplaceWith: "Droid3"})
-	modelReplacer.AddRule(strmanip.ReplacerRule{Type: "string", Find: "CanonPowerShot", ReplaceWith: "CPS_"})
-	modelReplacer.AddRule(strmanip.ReplacerRule{Type: "string", Find: "Canon PowerShot", ReplaceWith: "CPS_"})
-	modelReplacer.AddRule(strmanip.ReplacerRule{Type: "string", Find: "EOS", ReplaceWith: ""})
-	modelReplacer.AddRule(strmanip.ReplacerRule{Type: "string", Find: "REBEL", ReplaceWith: ""})
-	modelReplacer.AddRule(strmanip.ReplacerRule{Type: "string", Find: "Rebel", ReplaceWith: ""})
-	modelReplacer.AddRule(strmanip.ReplacerRule{Type: "string", Find: "FC300S", ReplaceWith: "DJI-Phantom3Adv"})
-	modelReplacer.AddRule(strmanip.ReplacerRule{Type: "string", Find: "FC330", ReplaceWith: "DJI-Phantom4"})
-	modelReplacer.AddRule(strmanip.ReplacerRule{Type: "string", Find: "HG310Z", ReplaceWith: "DJI-OsmoPlus"})
-
-	spaceReplacer.AddRule(strmanip.ReplacerRule{Type: "string", Find: `/`, ReplaceWith: "_"})
-	spaceReplacer.AddRule(strmanip.ReplacerRule{Type: "string", Find: `\`, ReplaceWith: "_"})
-	spaceReplacer.AddRule(strmanip.ReplacerRule{Type: "string", Find: ` `, ReplaceWith: ""})
-
-	// TODO: make ignore patterns not hardcoded
-	// TODO: make ignore patterns regex-capable
-	pathIgnoreSubstrings = append(pathIgnoreSubstrings, "/.sync/")
-
-	supportedMIMETypes = append(supportedMIMETypes, "image", "video")
-
-	// TODO: make log level configurable
 	log.SetFormatter(new(logfmt.NonDebugFormatter))
 	log.SetLevel(logrus.InfoLevel)
 	log.SetOutput(os.Stdout)
 
 	startLog := log.WithFields(logrus.Fields{"verb": "startup:"})
 
+	config.Initialize(os.Args[1:])
+	config.ProcessFatalFlags()
+	config.UseDefaultConfigPaths()
+	confLoaded, confErr = config.ReadConfiguration()
+
+	// startLog.Infof("conf: %v   %v", confLoaded, confErr)
+
+	if confLoaded {
+		err = config.ProcessConfiguration()
+		if err != nil {
+			startLog.Fatalf("an error occured while processing loaded configuration: %s", err)
+		}
+	}
+
+	if !confLoaded {
+		startLog.Fatalf("configuration could not be loaded. reason: %s", confErr)
+	}
+
+	if config.Config.GetBool("debug") {
+		log.SetLevel(logrus.TraceLevel)
+	}
+
+	//var modelReplacer strmanip.Replacer
+	var specialReplacer strmanip.Replacer
+
+	specialReplacer.AddRule(strmanip.ReplacerRule{Type: "string", Find: `/`, ReplaceWith: "_"})
+	specialReplacer.AddRule(strmanip.ReplacerRule{Type: "string", Find: `\`, ReplaceWith: "_"})
+
+	supportedMIMETypes = append(supportedMIMETypes, "image", "video")
+
 	startLog.Infof("I AM %s PLEASE INSERT MEDIA", os.Args[0])
+
 	for k, v := range os.Args {
 		startLog.Tracef("arg[%d]: '%s'", k, v)
+	}
+
+	if confLoaded && (confErr != nil) {
+		if confErr.Error() == config.DEFAULT_CONFIG_USED {
+			startLog.Warn("falling back to default configuration")
+		}
+	}
+
+	if config.Config.GetBool("dry-run") {
+		dryrun = true
+		startLog.Info("dry-run mode enabled")
 	}
 
 	merr = nil
 	err = nil
 
 	// Hard Requirements
-	// check for Exiftool
-	exiftoolbin := which.Which("exiftool")
-	if exiftoolbin == "" {
-		err = errors.New("exiftool binary was not found")
-		startLog.Debug((err))
-		merr = multierr.Append(merr, err)
+	exiftoolbin := ""
+	if exiftoolbin = config.Config.GetString("exiftool-binary"); exiftoolbin != "" {
+		startLog.Infof("using user-specified exiftool binary: %s", exiftoolbin)
 	} else {
-		startLog.Infof("exiftool found at: %s", exiftoolbin)
+		// check for Exiftool
+		exiftoolbin = which.Which("exiftool")
+		if exiftoolbin == "" {
+			err = errors.New("exiftool binary was not found")
+			startLog.Debug((err))
+			merr = multierr.Append(merr, err)
+		} else {
+			startLog.Infof("exiftool found at: %s", exiftoolbin)
+		}
 	}
-
 	// determine what paths we're working with
-	workDir, destRootDir, err = paths.GetMediaPaths()
+	workDir, destRootDir, err = paths.GetMediaPaths(config.FS.Args())
 	if err != nil {
 		merr = multierr.Append(merr, err)
 		err = fmt.Errorf("error determining paths. %s", err)
@@ -200,12 +190,13 @@ SOURCEFILE:
 
 		log.WithFields(logrus.Fields{"verb": "processing:"}).Infof("%s (%d of %d)", sourceFile, k+1, fileCount)
 
-		// ignore files from filtered paths
-		for _, substr := range pathIgnoreSubstrings {
-			if strings.Contains(sourceFile, substr) {
-				fileLogger.WithFields(logrus.Fields{"verb": "skip:"}).Warnf("sourceFile matches an ignore path substring ('%s')", substr)
-				continue SOURCEFILE
-			}
+		ignore, err := config.PathIgnorer.IsPathFiltered(sourceFile)
+		if err != nil {
+			fileLogger.WithFields(logrus.Fields{"verb": "skip:"}).Fatalf("Path Ignore Filter execution failed: reason ('%s')", err)
+		}
+		if ignore {
+			fileLogger.WithFields(logrus.Fields{"verb": "skip:"}).Warnf("sourceFile matches an ignore path pattern")
+			continue SOURCEFILE
 		}
 
 		sourceFileInfo, err := os.Stat(sourceFile)
@@ -214,7 +205,7 @@ SOURCEFILE:
 			continue SOURCEFILE
 		}
 
-		newPathSuffix, newFileName, fileExtension, err := generateFilenameBase(v, supportedMIMETypes, modelReplacer, spaceReplacer)
+		newPathSuffix, newFileName, fileExtension, err := generateFilenameBase(v, supportedMIMETypes, config.ModelReplacer, specialReplacer)
 		if err != nil {
 			fileLogger.WithFields(logrus.Fields{"verb": "skip:"}).Infof("generateFilenameBase: %s", err)
 			continue SOURCEFILE
@@ -288,23 +279,27 @@ SOURCEFILE:
 		fileLogger.Debugf("destination file: %s", destFile)
 
 		targetDir := destRootDir + dirSep + newPathSuffix
-		fileLogger.Debugf("creating target directory: %s", targetDir)
-		err = os.MkdirAll(targetDir, 0755)
-		if err != nil {
-			fileLogger.Errorf("could not create destination directory! reason: %s", err)
-		}
 
-		err = fileops.Move(sourceFile, destFile)
-		if err != nil {
-			fileLogger.WithFields(logrus.Fields{"verb": "error:"}).Errorf("could not rename file! reason: %s", err)
+		if !dryrun {
+			fileLogger.Debugf("creating target directory: %s", targetDir)
+			err = os.MkdirAll(targetDir, 0755)
+			if err != nil {
+				fileLogger.Errorf("could not create destination directory! reason: %s", err)
+			}
+
+			err = fileops.Move(sourceFile, destFile)
+			if err != nil {
+				fileLogger.WithFields(logrus.Fields{"verb": "error:"}).Errorf("could not rename file! reason: %s", err)
+			} else {
+				fileLogger.WithFields(logrus.Fields{"verb": "renamed:"}).Infof(">> %s", destFile)
+			}
 		} else {
-			fileLogger.WithFields(logrus.Fields{"verb": "renamed:"}).Infof(">> %s", destFile)
+			fileLogger.WithFields(logrus.Fields{"verb": "dry-run:"}).Infof(">> %s", destFile)
 		}
-
 	} // ends: for k, v := range result.Array()
 }
 
-func generateFilenameBase(meta gjson.Result, supportedMIMETypes []string, modelReplacer strmanip.Replacer, spaceReplacer strmanip.Replacer) (string, string, string, error) {
+func generateFilenameBase(meta gjson.Result, supportedMIMETypes []string, modelReplacer strmanip.Replacer, specialReplacer strmanip.Replacer) (string, string, string, error) {
 	var timeObj time.Time
 	var timeInput int64
 	var timestampFound bool
@@ -399,16 +394,16 @@ func generateFilenameBase(meta gjson.Result, supportedMIMETypes []string, modelR
 	}
 
 	model, _ = modelReplacer.Replace(model)
-	model, _ = spaceReplacer.Replace(model)
+	model, _ = specialReplacer.Replace(model)
 
 	if meta.Get("SerialNumber").Exists() {
 		cameraSerial = meta.Get("SerialNumber").String()
-		cameraSerial, _ = spaceReplacer.Replace(cameraSerial)
+		cameraSerial, _ = specialReplacer.Replace(cameraSerial)
 	}
 
 	if meta.Get("LensSerialNumber").Exists() {
 		lensSerial = meta.Get("LensSerialNumber").String()
-		lensSerial, _ = spaceReplacer.Replace(lensSerial)
+		lensSerial, _ = specialReplacer.Replace(lensSerial)
 	}
 
 	gfbLogger.Debugf("model: %s", model)

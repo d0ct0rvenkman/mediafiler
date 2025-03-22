@@ -1,0 +1,2 @@
+debug: true
+exiftool-binary: /usr/bin/path2/exiftool

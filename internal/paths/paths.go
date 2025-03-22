@@ -22,7 +22,7 @@ based on command line arguments and/or environment variables
 
 returns workDir, destRootDir, err
 */
-func GetMediaPaths() (string, string, error) {
+func GetMediaPaths(args []string) (string, string, error) {
 	var workDir string
 	var destRootDir string
 	var err error
@@ -33,13 +33,13 @@ func GetMediaPaths() (string, string, error) {
 	err = nil
 
 	// TODO: we'll work up to stuff other than positional arguments later
-	argc := len(os.Args)
+	argc := len(args)
 	switch {
-	case argc > 2:
-		destRootDir = os.Args[2]
-		fallthrough
 	case argc > 1:
-		workDir = os.Args[1]
+		destRootDir = args[1]
+		fallthrough
+	case argc > 0:
+		workDir = args[0]
 	default:
 
 	}

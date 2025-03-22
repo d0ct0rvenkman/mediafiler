@@ -122,16 +122,16 @@ video/x-msvideo/2007/06/20070625T052246.000Z-unknown.avi
 
 
 # TODO
-- [ ] Make camera model substitutions/translations configurable via config file
+- [X] Make camera model substitutions/translations configurable via config file
 - [X] Make camera model translations based on regex and not just substitution
 - [ ] Don't assume unix-like path separators (Windows support)
-- [ ] Make file/path ignores configurable via config file 
-- [ ] Make file/path ignores based on regex
-- [ ] Make logging level configurable at run time
+- [X] Make file/path ignores configurable via config file 
+- [X] Make file/path ignores based on regex
+- [X] Make logging level configurable at run time
 - [ ] Make file/directory naming customizable via templates
-- [ ] Dry-run/no-op option
-- [ ] Refactor for tests
-- [ ] Tests
-- [ ] Command line flags
+- [X] Dry-run/no-op option
+- [-] Refactor for tests
+- [-] Tests
+- [X] Command line flags
 - [ ] Configurable duplicate behavior (delete source duplicate, drop a symlink as a marker?, replace source with symlink?)
 - [ ] Configurable defaults (source/dest paths, duplicate behavior)
