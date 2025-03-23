@@ -1,0 +1,67 @@
+debug: false
+dry-run: true
+# exiftool-binary: /usr/bin/exiftool
+model-replace-rules:
+- replace_type: "regex"
+  find_pattern: '^Canon EOS Rebel T7i$'
+  replace_with: 'Canon800D'
+- replace_type: "regex"
+  find_pattern: '^Canon EOS REBEL T3i$'
+  replace_with: 'Canon600D'
+- replace_type: "regex"
+  find_pattern: '^Canon EOS DIGITAL REBEL XS$'
+  replace_with: 'Canon1000D'
+- replace_type: "regex"
+  find_pattern: '^Canon EOS DIGITAL REBEL$'
+  replace_with: 'Canon300D'
+- replace_type: "regex"
+  find_pattern: '^motorola DROID3$'
+  replace_with: 'Droid3'
+- replace_type: "regex"
+  find_pattern: '\s+'
+  replace_with: ""
+
+- replace_type: "string"
+  find_pattern: 'CanonEOSDIGITALREBELXS'
+  replace_with: 'Canon1000D'
+- replace_type: "string"
+  find_pattern: 'CanonEOSDIGITALREBEL'
+  replace_with: 'Canon300D'
+- replace_type: "string"
+  find_pattern: 'motorolaDROID3'
+  replace_with: 'Droid3'
+- replace_type: "string"
+  find_pattern: 'CanonPowerShot'
+  replace_with: 'CPS_'
+- replace_type: "string"
+  find_pattern: 'Canon PowerShot'
+  replace_with: 'CPS_'
+- replace_type: "string"
+  find_pattern: 'EOS'
+  replace_with: ''
+- replace_type: "string"
+  find_pattern: 'REBEL'
+  replace_with: ''
+- replace_type: "string"
+  find_pattern: 'Rebel'
+  replace_with: ''
+- replace_type: "string"
+  find_pattern: 'FC300S'
+  replace_with: 'DJI-Phantom3Adv'
+- replace_type: "string"
+  find_pattern: 'FC330'
+  replace_with: 'DJI-Phantom4'
+- replace_type: "string"
+  find_pattern: 'HG310Z'
+  replace_with: 'DJI-OsmoPlus'
+
+
+path-ignore-patterns:
+- type: "string"
+  pattern: '.git/'
+- type: "string"
+  pattern: '.git\'
+- type: "string"
+  pattern: '.sync/'
+
+

@@ -96,18 +96,24 @@ Each top-level key of the configuration file is technically optional, but can be
 * `dry-run` - executes mediafiler an a read-only mode where actions are displayed, but no changes are made.
 * `exiftool-binary` - used to specify a path to the exiftool binary. If this is not specified, mediafiler will look for it in paths defined by the `$PATH` environment variable.
 * `model-replace-rules` - this key defines a list of rules to modify camera models that are used in file names. Each rule is a hash of three key/value pairs:
-```
-- type: either "string" or "regex". 
-  find_pattern: a string containing the search pattern. Cannot be empty.
-  replace_with: a string containing the replace term. Can be empty. 
-```
-String rules are simple find/replace operations, replacing each instance of the string with the replace value in a single pass. Regex rules use regular expressions to find and replace. Positional capture elements can be used in the `replace_with` patterns to substitute values captured in the `find_pattern`.
+    ```
+    - type: either "string" or "regex". 
+    find_pattern: a string containing the search pattern. Cannot be empty.
+    replace_with: a string containing the replace term. Can be empty. 
+    ```
+    String rules are simple find/replace operations, replacing each instance of the string with the replace value in a single pass. Regex rules use regular expressions to find and replace. Positional capture elements can be used in the `replace_with` patterns to substitute values captured in the `find_pattern`.
 * `path-ignore-patterns` - this key defines a list of path patterns that should be ignored by mediafiler. Each pattern is a hash of two key value pairs.
-```
-- type: "string" or "regex"
-  pattern: a string containing the search pattern. For the string type, this is a simple string match. For regex, the pattern uses regular expressions to match paths. 
-```
-If the source file name matches one of these patterns it will be skipped by mediafiler. It's worth noting that this path is evaluated using the source directory provided on the command line, which is not necessarily the complete filesystem path. If a relative directory (such as './pictures/') is used as a source directory, mediafiler will not match parts of the path above that directory in the filesystem structure.
+    ```
+    - type: "string" or "regex"
+      pattern: a string containing the search pattern. 
+    ```
+    Much like the model replace rules, the match behavior is defined by the type. For the string type, this is a simple string match against the pattern specified. For regex, the pattern uses regular expressions to match paths. 
+    
+    If the source file name matches one of these patterns it will be skipped by mediafiler. It's worth noting that this path is evaluated using the source directory provided on the command line, which is not necessarily the complete filesystem path. If a relative directory (such as './pictures/') is used as a source directory, mediafiler will not match parts of the path above that directory in the filesystem structure.
+
+> [!TIP]
+> Example configuration files can be found in the [examples](https://github.com/d0ct0rvenkman/mediafiler/examples) directory of the source code.
+
 
 ## Command Line Arguments
 ```
