@@ -2,6 +2,9 @@ package strmanip
 
 import "testing"
 
+/*
+This test verfies the IsValid method passes/fails individual rules correctly
+*/
 func TestReplacerIsValid(t *testing.T) {
 
 	tests := []struct {
@@ -30,6 +33,9 @@ func TestReplacerIsValid(t *testing.T) {
 
 }
 
+/*
+This test verfies that AddRule properly adds individual rules to a Replacer
+*/
 func TestReplacerAddRule(t *testing.T) {
 	rule1 := ReplacerRule{Type: "string", Find: "findme", ReplaceWith: "replacewithme"}                 // good
 	rule2 := ReplacerRule{Type: "string", Find: "", ReplaceWith: "replacewithme"}                       // bad
@@ -38,6 +44,7 @@ func TestReplacerAddRule(t *testing.T) {
 	rule5 := ReplacerRule{Type: "string", Find: "findyou", ReplaceWith: "replacewithyou"}               // good
 	rule6 := ReplacerRule{Type: "string", Find: "findagain", ReplaceWith: "replacewithagain"}           // good
 	rule7 := ReplacerRule{Type: "string", Find: "findrepeatedly", ReplaceWith: "replacewithrepeatedly"} // good
+	rule8 := ReplacerRule{Type: "strang", Find: "findexcessively", ReplaceWith: "replaceexcessively"}   // bad
 
 	var r Replacer
 	if len(r) != 0 {
@@ -79,12 +86,20 @@ func TestReplacerAddRule(t *testing.T) {
 		t.Errorf("ReplacerRule.AddRule(): rule count is %v, expected 5", l)
 	}
 
+	r.AddRule(rule8)
+	if l := len(r); l != 5 {
+		t.Errorf("ReplacerRule.AddRule(): rule count is %v, expected 5", l)
+	}
+
 	if r[1] != rule3 {
 		t.Errorf("ReplacerRule.AddRule(): rule 1 is expected to match test rule 3, but doesn't")
 	}
 
 }
 
+/*
+This test verifies basic Replacer functionality using string types.
+*/
 func TestReplacerReplace_StringBasic(t *testing.T) {
 	type args struct {
 		str     string
@@ -151,6 +166,9 @@ func TestReplacerReplace_StringBasic(t *testing.T) {
 
 }
 
+/*
+This test verifies basic Replacer functionality using regex types.
+*/
 func TestReplacerReplace_RegexBasic(t *testing.T) {
 	type args struct {
 		str     string
@@ -212,6 +230,10 @@ func TestReplacerReplace_RegexBasic(t *testing.T) {
 
 }
 
+/*
+This test verifies a more complicated Replacer rule set using both string and regex types
+and ordered replacements.
+*/
 func TestReplacerReplace_Complex(t *testing.T) {
 	type args struct {
 		str     string

@@ -11,6 +11,9 @@ import (
 
 type cli_args []string
 
+/*
+This test verfies basic command line argument functionality
+*/
 func Test_CommandLine_Basic(t *testing.T) {
 	testNameSlug := "commandlinebasic-"
 	// t.Run("",  func(t *testing.T) {})
@@ -114,6 +117,9 @@ func Test_CommandLine_Basic(t *testing.T) {
 
 }
 
+/*
+This test verifies that the default/example config can be loaded and populates the correct values.
+*/
 func Test_DefaultConfigYAML(t *testing.T) {
 	var args cli_args
 
@@ -215,6 +221,10 @@ func Test_DefaultConfigYAML(t *testing.T) {
 
 }
 
+/*
+This test ensures that the 'correct' configuration (e.g. the first found) is loaded from a set of multiple
+search directories.
+*/
 func Test_PathSearch_1(t *testing.T) {
 	var args cli_args
 
@@ -272,6 +282,10 @@ func Test_PathSearch_1(t *testing.T) {
 
 }
 
+/*
+This test ensures that the 'correct' configuration (e.g. the first found) is loaded from a set of multiple
+search directories.
+*/
 func Test_PathSearch_2(t *testing.T) {
 	var args cli_args
 
@@ -329,6 +343,9 @@ func Test_PathSearch_2(t *testing.T) {
 
 }
 
+/*
+This test ensures that we load a valid configuration from a file specified from the user.
+*/
 func Test_SpecificCfgFile_Good(t *testing.T) {
 	var args cli_args
 	testNameSlug := "specificcfg-good-"
@@ -385,6 +402,9 @@ func Test_SpecificCfgFile_Good(t *testing.T) {
 }
 
 /*
+This test makes sure that we generate appropriate errors if the user specifies a config file that exists
+but doesn't contain valid configuration data.
+
 // This test won't work as conceived because viper is too lenient on what it considers a usable config file.
 // See: https://github.com/spf13/viper/issues/1843
 
@@ -406,6 +426,9 @@ func Test_SpecificCfgFile_Bad(t *testing.T) {
 }
 */
 
+/*
+Make sure we generate appropriate errors if the user tries to use a config file that doesn't exist
+*/
 func Test_SpecificCfgFile_Missing(t *testing.T) {
 	var args cli_args
 	testNameSlug := "specificcfg-missing-"

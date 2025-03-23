@@ -5,6 +5,10 @@ import (
 	"testing"
 )
 
+/*
+This test verifies the correctness of the IsValid method and whether it will allow
+proper values and disallow improper values.
+*/
 func TestPathIgnorePattern_IsValid(t *testing.T) {
 	type fields struct {
 		Type    string
@@ -37,14 +41,19 @@ func TestPathIgnorePattern_IsValid(t *testing.T) {
 	}
 }
 
+/*
+This test verifies that a set of filter files are added or rejected and whether the final result
+matches what is expected
+*/
 func TestIgnoreFilterAddRule(t *testing.T) {
-	rule1 := PathIgnorePattern{Type: "string", Pattern: "findme"}         // good
-	rule2 := PathIgnorePattern{Type: "string", Pattern: ""}               // bad
-	rule3 := PathIgnorePattern{Type: "regex", Pattern: "^$"}              // good
-	rule4 := PathIgnorePattern{Type: "regex", Pattern: "^(("}             // bad
-	rule5 := PathIgnorePattern{Type: "string", Pattern: "findyou"}        // good
-	rule6 := PathIgnorePattern{Type: "string", Pattern: "findagain"}      // good
-	rule7 := PathIgnorePattern{Type: "string", Pattern: "findrepeatedly"} // good
+	rule1 := PathIgnorePattern{Type: "string", Pattern: "findme"}          // good
+	rule2 := PathIgnorePattern{Type: "string", Pattern: ""}                // bad
+	rule3 := PathIgnorePattern{Type: "regex", Pattern: "^$"}               // good
+	rule4 := PathIgnorePattern{Type: "regex", Pattern: "^(("}              // bad
+	rule5 := PathIgnorePattern{Type: "string", Pattern: "findyou"}         // good
+	rule6 := PathIgnorePattern{Type: "string", Pattern: "findagain"}       // good
+	rule7 := PathIgnorePattern{Type: "string", Pattern: "findrepeatedly"}  // good
+	rule8 := PathIgnorePattern{Type: "stronk", Pattern: "findexcessively"} // bad
 
 	var p PathIgnoreFilter
 	if len(p) != 0 {
@@ -86,12 +95,19 @@ func TestIgnoreFilterAddRule(t *testing.T) {
 		t.Errorf("PathIgnorePattern.AddRule(): rule count is %v, expected 5", l)
 	}
 
+	p.AddPattern(rule8)
+	if l := len(p); l != 5 {
+		t.Errorf("PathIgnorePattern.AddRule(): rule count is %v, expected 5", l)
+	}
+
 	if p[1] != rule3 {
 		t.Errorf("PathIgnorePattern.AddRule(): rule 1 is expected to match test rule 3, but doesn't")
 	}
-
 }
 
+/*
+This test verfies IsPathFiltered functions properly with a set of paths and example filter rules.
+*/
 func TestPathIgnoreFilter_IsPathFiltered(t *testing.T) {
 
 	var p PathIgnoreFilter
