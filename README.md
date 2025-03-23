@@ -109,7 +109,7 @@ Each top-level key of the configuration file is technically optional, but can be
     ```
     Much like the model replace rules, the match behavior is defined by the type. For the string type, this is a simple string match against the pattern specified. For regex, the pattern uses regular expressions to match paths. 
 
-    If the source file name matches one of these patterns it will be skipped by mediafiler. It's worth noting that this path is evaluated using the source directory provided on the command line, which is not necessarily the complete filesystem path. If a relative directory (such as './pictures/') is used as a source directory, mediafiler will not match parts of the path above that directory in the filesystem structure.
+    If the source file name matches one of these patterns it will be skipped by mediafiler. It's worth noting that exiftool resolves the full path for each file even if a relative directory (such as './pictures/') is used as a source directory. Therefore, mediafiler will match parts of the path above that directory in the filesystem structure.
 
 > [!TIP]
 > Example configuration files can be found in the [examples](https://github.com/d0ct0rvenkman/mediafiler/tree/main/examples) directory of the source code.
