@@ -53,9 +53,80 @@ go install github.com/d0ct0rvenkman/mediafiler@latest
 ```
 - run mediafiler
 ```
-~/go/bin/mediafiler  source_directory  destination_root_directory
+~/go/bin/mediafiler --use-default-config  source_directory  destination_root_directory
 ```
 - profit? probably not.
+
+# Configuration
+Most of the configuration is expected to reside in a configuration file with the option of overriding certain parts via command line aguments. A simple example of this configuration file can be shown by using the `--dump-example-config` flag. 
+```
+# mediafiler --dump-example-config
+
+debug: false
+dry-run: false
+exiftool-binary: /usr/bin/exiftool
+model-replace-rules:
+- replace_type: "string"
+  find_pattern: "FooBarMatic"
+  replace_with: "FBM"
+- replace_type: "regex"
+  find_pattern: '\s+'
+  replace_with: ""
+path-ignore-patterns:
+- type: "string"
+  pattern: '.git/'
+- type: "string"
+  pattern: '.git\'
+- type: "regex"
+  pattern: '^.*[Ii][Cc][Oo]$'
+
+```
+This same configuration will be applied as a fallback if the `--use-default-config` flag is used.
+
+## Config File
+The configuration file `mediafiler.yaml` is expected to be in one of the following search paths. The first found will be used.
+```
+$HOME/.config/mediafiler
+/etc/mediafiler/
+```
+The command line argument `--config-file` can be used to specify a direct path to a configuration file. If this flag is used, mediafiler will skip searching for configuration files in the search paths.
+
+Each top-level key of the configuration file is technically optional, but can be used to alter the way mediafiler operates.
+* `debug` - puts mediafiler into a debug mode with more verbose output.
+* `dry-run` - executes mediafiler an a read-only mode where actions are displayed, but no changes are made.
+* `exiftool-binary` - used to specify a path to the exiftool binary. If this is not specified, mediafiler will look for it in paths defined by the `$PATH` environment variable.
+* `model-replace-rules` - this key defines a list of rules to modify camera models that are used in file names. Each rule is a hash of three key/value pairs:
+```
+- type: either "string" or "regex". 
+  find_pattern: a string containing the search pattern. Cannot be empty.
+  replace_with: a string containing the replace term. Can be empty. 
+```
+String rules are simple find/replace operations, replacing each instance of the string with the replace value in a single pass. Regex rules use regular expressions to find and replace. Positional capture elements can be used in the `replace_with` patterns to substitute values captured in the `find_pattern`.
+* `path-ignore-patterns` - this key defines a list of path patterns that should be ignored by mediafiler. Each pattern is a hash of two key value pairs.
+```
+- type: "string" or "regex"
+  pattern: a string containing the search pattern. For the string type, this is a simple string match. For regex, the pattern uses regular expressions to match paths. 
+```
+If the source file name matches one of these patterns it will be skipped by mediafiler. It's worth noting that this path is evaluated using the source directory provided on the command line, which is not necessarily the complete filesystem path. If a relative directory (such as './pictures/') is used as a source directory, mediafiler will not match parts of the path above that directory in the filesystem structure.
+
+## Command Line Arguments
+```
+# mediafiler --help
+Usage of mediafiler:
+      --config-file string       path to mediafiler configuration file. 
+      --debug                    increase logging verbosity to debug level
+      --dry-run                  run in dry-run mode where actions are displayed but not executed
+      --dump-example-config      dump example configuration file to standard output
+      --exiftool-binary string   path to exiftool binary
+      --use-default-config       use the default/example configuration if a config file cannot be found via search paths. if a config file is specified via the 'config-file' argument but not found, this flag will have no effect.
+
+# mediafiler [optional flags] sourceDir destDir
+
+Both sourceDir and destDir arguments are required
+```
+There is overlap between configuration file values and command line arguments. Command line arguments will override values found in the configuration file if both are present.
+
+
 
 
 # Directory Structure
@@ -117,9 +188,7 @@ video/quicktime/2016/05/20160530T165526.000Z-DJI-Phantom3Adv.mov
 video/quicktime/2016/05/20160531T225438.000Z-DJI-Phantom3Adv.mov
 video/x-msvideo/2007/04/20070406T214156.000Z-unknown.avi
 video/x-msvideo/2007/06/20070625T052246.000Z-unknown.avi
-
 ```
-
 
 # TODO
 - [X] Make camera model substitutions/translations configurable via config file

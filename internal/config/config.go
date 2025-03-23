@@ -52,6 +52,11 @@ func Initialize(args []string) {
 
 	// exit if -h or --help is found
 	if err == pflag.ErrHelp {
+		fmt.Fprintf(os.Stderr, "\n")
+		fmt.Fprintf(os.Stderr, "#mediafiler [optional flags] sourceDir destDir\n")
+		fmt.Fprintf(os.Stderr, "\n")
+		fmt.Fprintf(os.Stderr, "Both sourceDir and destDir arguments are required\n")
+		fmt.Fprintf(os.Stderr, "\n")
 		os.Exit(0)
 	}
 
