@@ -141,6 +141,7 @@ SubSecDateTimeOriginal
 DateTimeOriginal
 CreateDate
 ModifyDate
+GPSDateTime   (not necessarily accurate, but better than nothing)
 ```
 Similarly, the following fields are examined for camera model names.
 ```
